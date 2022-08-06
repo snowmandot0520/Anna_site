@@ -1,0 +1,16 @@
+.DS_Store
+.idea
+.pytest_cache
+.vscode
+.coverage
+
+*.pyc
+*.pdf
+
+local/
+venv/
+__pycache__/
+
+tree.png
+tree.dot
+oryx-build-commands.txt
