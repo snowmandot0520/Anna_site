@@ -66,6 +66,7 @@ class BaseModel(ABC):
 
         return self.available_input_features
 
+    # TODO change hard encoded label features to more flexible form. Also consider run time calculation of survival.
     def get_label_feature(self, label_feature, censoring=False):
         if label_feature == 'Failure within 1 year [y/n]':
             self.label_feature = 'Graft failed within 1 year of transplant? '
@@ -86,8 +87,8 @@ class BaseModel(ABC):
                                     len(self.dataframe['Graft failed within 1 year of transplant? ']))
 
         if verbose:
-            st.text('Uploaded dataset (deceased donor subset): {} samples'.format(self.dataframe.shape[0]))
-            st.text('=> i.e {:.1f} % positive for failure within 1 year'.format(failure_proportion_predrop * 100))
+            st.text(f'Uploaded dataset (deceased donor subset): {self.dataframe.shape[0]} samples')
+            st.text(f'=> i.e {failure_proportion_predrop * 100:.1f} % positive for failure within 1 year')
 
         self.dataframe.replace('n/a', np.NaN, inplace=True)
         self.dataframe.dropna(axis=0, how='any', subset=self.input_features + [self.label_feature], inplace=True)
@@ -100,27 +101,33 @@ class BaseModel(ABC):
                             len(self.dataframe['Graft failed within 1 year of transplant? ']))
 
         if verbose:
-            st.text('Post incomplete data removal: {} samples'.format(self.dataframe.shape[0]))
-            st.text('=> i.e {:.1f} % positive for failure within 1 year'.format(self.class_proportion * 100))
+            st.text(f'Post incomplete data removal: {self.dataframe.shape[0]} samples')
+            st.text(f'=> i.e {self.class_proportion * 100:.1f} % positive for failure within 1 year')
 
         self.input_features_cat = []
         for feature in self.input_features:
             if self.feature_dict[feature] == 'cat_input':
                 self.input_features_cat.append(feature)
 
-        self.x = pd.get_dummies(self.dataframe[self.input_features], prefix=self.input_features_cat, columns=self.input_features_cat)
+        self.x = pd.get_dummies(
+            self.dataframe[self.input_features],
+            prefix=self.input_features_cat,
+            columns=self.input_features_cat
+            )
         self.y = self.dataframe[self.label_feature]
 
     def get_iterable_model_options(self, *args, **kwargs):
         iterables = list()
         for option_list in args:
-            iterables.append(option_list)  # used for unordered multiselect inputs; i.e. criterion
+            # used for unordered multiselect inputs; i.e. criterion
+            iterables.append(option_list)
         for option in kwargs:
             select_list = np.array(self.iterable_model_options_dict[option + '_list'])
             min_val, max_val = kwargs[option]
             min_index = np.where(select_list==min_val)[0][0]
             max_index = np.where(select_list==max_val)[0][0]
-            selected_list = list(select_list[min_index:max_index+1])  # select inclusively for ordered selections; i.e. c_params
+            # select inclusively for ordered selections; i.e. c_params
+            selected_list = list(select_list[min_index:max_index+1])
             iterables.append(selected_list)
         return iterables
 
@@ -135,12 +142,23 @@ class BaseModel(ABC):
 
     def train_test_split(self, test_proportion, verbose=True):
         stratify = self.y if self.feature_dict[self.label_feature] == 'cat_output' else None
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.x, self.y, stratify=stratify, test_size=test_proportion)
+        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
+                                                                    self.x,
+                                                                    self.y,
+                                                                    stratify=stratify,
+                                                                    test_size=test_proportion
+                                                                    )
         if verbose:
-            st.text('Train size: {} samples | Positive: {}; Negative: {}'.format(len(self.x_train), sum(self.y_train == 'Yes'),
-                                                                                 sum(self.y_train == 'No')))
-            st.text('Test size: {} samples | Positive: {}; Negative: {}'.format(len(self.x_test), sum(self.y_test == 'Yes'),
-                                                                                sum(self.y_test == 'No')))
+            st.text(
+                f'''Train size: {len(self.x_train)} samples |
+                 Positive: {sum(self.y_train == 'Yes')};
+                 Negative: {sum(self.y_train == 'No')}'''
+            )
+            st.text(
+                f'''Test size: {len(self.x_test)} samples |
+                 Positive: {sum(self.y_test == 'Yes')};
+                 Negative: {sum(self.y_test == 'No')}'''
+            )
 
     def concordance_index_score(self, estimator, x, y):
         # wrapper to implement custom sklearn scoring function using lifelines
@@ -151,12 +169,12 @@ class BaseModel(ABC):
         cm_test = confusion_matrix(y_true=self.y_test, y_pred=self.y_test_pred)
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
-        fig.suptitle('Confusion Matrix: {}'.format(self.model_name))
+        fig.suptitle(f'Confusion Matrix: {self.model_name}')
         ConfusionMatrixDisplay(cm_train).plot(ax=ax1)
         ConfusionMatrixDisplay(cm_test).plot(ax=ax2)
         ax1.set_title('Train data')
         ax2.set_title('Test data')
-        st.subheader('Confusion matrix: {}'.format(self.model_name))
+        st.subheader(f'Confusion matrix: {self.model_name}')
         st.pyplot(fig)
 
     def plot_variable_importance(self):
@@ -165,9 +183,9 @@ class BaseModel(ABC):
 
         fig, ax = plt.subplots()
         ax.boxplot(result.importances[sorted_idx].T, vert=False, labels=self.x_train.columns[sorted_idx])
-        ax.set_title('Permutation Importances (train set): {}'.format(self.model_name))
+        ax.set_title(f'Permutation Importances (train set): {self.model_name}')
         fig.tight_layout()
-        st.subheader('Variable importance: {}'.format(self.model_name))
+        st.subheader(f'Variable importance: {self.model_name}')
         st.pyplot(fig)
 
     def plot_recursive_feature_elimination_cross_validation_test(self):
@@ -185,7 +203,7 @@ class BaseModel(ABC):
         self.fig_rfecv = fig
 
     def export_log_to_local(self):
-        st.text('Exporting log for {}'.format(self.model_name.lower()))
+        st.text(f'Exporting log for {self.model_name.lower()}')
         experiment_number = 0
         file_root = str(os.getcwd()) + '/Results/'
 
@@ -194,11 +212,11 @@ class BaseModel(ABC):
         os.makedirs(file_root + 'Experiment_' + str(experiment_number) + '/')
         file_path = (file_root + 'Experiment_' + str(experiment_number) + '/'
                     + self.model_name + '.xlsx')
-        st.text('Saved as {}'.format(file_path))
+        st.text(f'Saved as {file_path}')
         self.log.to_excel(file_path)
 
     def export_fig_to_local(self):
-        st.text('Exporting figure for {}'.format(self.model_name.lower()))
+        st.text(f'Exporting figure for {self.model_name.lower()}')
         experiment_number = 0
         file_root = str(os.getcwd()) + '/Results/'
 
@@ -209,7 +227,7 @@ class BaseModel(ABC):
 
         for fig_number, fig in enumerate(self.fig_list):
             fig.savefig(file_path + 'figure_' + str(fig_number) + '.png', transparent=True)
-            st.text('Saved as {}'.format(file_path))
+            st.text(f'Saved as {file_path}')
 
     def create_log_download_button(self):
         log = self.log.to_csv().encode('utf-8')
