@@ -146,8 +146,8 @@ def dev_gp_scikitlearn(model):
     ############################################################## 
 
     # Generate true distribution 
-    X = model.X_test.drop
-    y = model.Y_test
+    X = model.x_test.drop
+    y = model.y_test
 
     # Create kernel
     #kernel = 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
@@ -166,14 +166,14 @@ def dev_gp_scikitlearn(model):
     st.write("GP created")
 
     with st.spinner("GP Fitting in process"):
-        gaussian_process.fit(model.X_train, model.Y_train)
+        gaussian_process.fit(model.x_train, model.y_train)
     st.success("Fit Done")
 
     # Run inference
-    mean_prediction, std_prediction = gaussian_process.predict(model.X_test, return_std=True)
+    mean_prediction, std_prediction = gaussian_process.predict(model.x_test, return_std=True)
 
     # Plot Transplant data
-    selected_covariates = model.X.columns
+    selected_covariates = model.x.columns
     fig_multi= plt.figure(figsize=(8, 4*len(selected_covariates)))
     gs = gridspec.GridSpec(len(selected_covariates), 1)
 
@@ -181,7 +181,7 @@ def dev_gp_scikitlearn(model):
 
         # sort data
         mean_prediction_df = pd.Series(mean_prediction, name='mean_prediction')
-        dataframe = pd.concat([model.X_test, model.Y_test, mean_prediction_df], axis=1)
+        dataframe = pd.concat([model.x_test, model.y_test, mean_prediction_df], axis=1)
         sorted_dataframe = dataframe.sort_values(by=covariate)
         st.write(sorted_dataframe.columns)
 
@@ -193,7 +193,7 @@ def dev_gp_scikitlearn(model):
         ax = fig_multi.add_subplot(gs[i])
         ax.set_title(covariate)
         ax.plot(X, Y, label="Test_dist", linestyle="dotted")
-        ax.scatter(model.X_train[covariate], model.Y_train, label="Observations")
+        ax.scatter(model.x_train[covariate], model.y_train, label="Observations")
         ax.plot(X, Y_pred, label="Mean prediction")
         ax.legend()
 

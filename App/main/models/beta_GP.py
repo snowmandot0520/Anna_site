@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
-from main.models.BaseModel import BaseModel
+from App.main.models.base_model import BaseModel
 from main.utils.RFECV import RFECV
 from sklearn.metrics import *
 from sklearn.model_selection import train_test_split, cross_validate

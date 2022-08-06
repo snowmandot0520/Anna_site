@@ -2,10 +2,10 @@
 import streamlit as st
 
 from itertools import product
-from main.models.SVM import SupportVectorClassifier, SupportVectorRegression
-from main.models.RF import RandomForest
-from main.models.CART import RegressionTree
-from main.models.MLP import MultiLayerPerceptron
+from App.main.models.support_vector_machine_model import SupportVectorClassifier, SupportVectorRegression
+from App.main.models.random_forest_model import RandomForest
+from App.main.models.cart_model import RegressionTree
+from App.main.models.multi_layer_perceptron_model import MultiLayerPerceptron
 
 # MAIN SCRIPT --------------------------------------------------------------
 @st.cache(allow_output_mutation=True)
@@ -90,12 +90,12 @@ def experiment(file, verbose):
         st.warning('❗Please select at least one input feature to run analysis.')
         st.stop()
 
-    st.write("### Dataset size")
+    st.write('### Dataset size')
     svm_model.process_input_options(verbose=False)
     rf_model.process_input_options(verbose=False)
     mlp_model.process_input_options(verbose=False)
 
-    st.write("### Train / Test split")
+    st.write('### Train / Test split')
     test_proportion = st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3)
     svm_model.train_test_split(test_proportion=test_proportion)
     rf_model.train_test_split(test_proportion=test_proportion, verbose=False)

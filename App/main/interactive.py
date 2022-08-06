@@ -1,10 +1,10 @@
 # LOAD DEPENDENCY ----------------------------------------------------------
 import streamlit as st
 
-from main.models.SVM import SupportVectorClassifier, SupportVectorRegression
-from main.models.RF import RandomForest
-from main.models.CART import RegressionTree
-from main.models.CPH import CoxProportionalHazardsRegression
+from App.main.models.support_vector_machine_model import SupportVectorClassifier, SupportVectorRegression
+from App.main.models.random_forest_model import RandomForest
+from App.main.models.cart_model import RegressionTree
+from App.main.models.cox_ph_model import CoxProportionalHazardsRegression
 
 
 # MAIN SCRIPT --------------------------------------------------------------
@@ -26,7 +26,7 @@ def interactive_run(file, verbose):
 
         # Classification task
         if selected_label == 'Failure within 1 year [y/n]':
-            selected_model = st.selectbox("Classification model:", ["Support Vector Machine", "Random Forest"])
+            selected_model = st.selectbox('Classification model:', ['Support Vector Machine', 'Random Forest'])
 
             if selected_model == 'Support Vector Machine':
                 model = SupportVectorClassifier()
@@ -42,7 +42,7 @@ def interactive_run(file, verbose):
 
         # Regression task
         elif selected_label == 'Survival time [days]':
-            selected_model = st.selectbox("Regression model:", ["Cox Proportional Hazards", "Support Vector Machine", "Regression Tree"])
+            selected_model = st.selectbox('Regression model:', ['Cox Proportional Hazards', 'Support Vector Machine', 'Regression Tree'])
 
             if selected_model == 'Cox Proportional Hazards':
                 model = CoxProportionalHazardsRegression()
@@ -76,12 +76,12 @@ def interactive_run(file, verbose):
         st.sidebar.warning('❗Please select at least two input feature to recursive feature elimination')
         st.stop()
 
-    st.write("#### Dataset size")
+    st.write('#### Dataset size')
     model.process_input_options(verbose=verbose)
     if selected_model == 'Cox Proportional Hazards':
         model.create_event_status(duration_days=365)
 
-    st.write("#### Train / Test split")
+    st.write('#### Train / Test split')
     model.train_test_split(test_proportion=st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3))
 
     if st.session_state['train_state'] == False:
@@ -95,19 +95,19 @@ def interactive_run(file, verbose):
         model.build_estimator()
         if selected_model == 'Cox Proportional Hazards':
             model.combine_outcome_data()
-        st.write("#### Train model")
+        st.write('#### Train model')
         with st.spinner('training in progress...'):
             model.train()
         st.success('Done!')
         st.session_state['train_state'] = True
 
-    st.write("#### Model performance on test set")
+    st.write('#### Model performance on test set')
     model.evaluate(verbose=verbose)
     model.save_log()
 
-    st.write("#### Model output visualisation")
+    st.write('#### Model output visualisation')
     if selected_model == 'Cox Proportional Hazards':
-        selected_covariates = st.multiselect('Plot partial effects on outcome for following:', model.X.columns.drop('Event_observed'))
+        selected_covariates = st.multiselect('Plot partial effects on outcome for following:', model.x.columns.drop('Event_observed'))
         model.visualize(selected_covariates)
     else:
         model.visualize()

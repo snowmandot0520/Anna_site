@@ -10,3 +10,4 @@ scikit_learn==1.1.1
 streamlit==1.11.1
 tensorflow==2.9.1
 tensorflow_probability==0.17.0
+openpyxl==3.0.10

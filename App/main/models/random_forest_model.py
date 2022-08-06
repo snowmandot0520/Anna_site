@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from main.models.BaseModel import BaseModel
+from App.main.models.base_model import BaseModel
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
-from sklearn.model_selection import train_test_split, cross_validate
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import cross_validate
 from sklearn.feature_selection import RFE
 
 
@@ -15,7 +15,7 @@ class RandomForest(BaseModel):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "Random Forest Classifier"
+        self.model_name = 'Random Forest Classifier'
         self.n_estimators = 100
         self.n_estimators_list = [1, 10, 50, 100, 200, 500, 1000, 10000]
         self.max_depth = 4
@@ -35,31 +35,31 @@ class RandomForest(BaseModel):
 
         if self.rfe:
             selector = RFE(self.estimator, n_features_to_select=self.n_features_to_select, step=self.rfe_step)
-            self.best_classifier = selector.fit(self.X_train, self.Y_train)
+            self.best_classifier = selector.fit(self.x_train, self.y_train)
             self.sort_feature_importance()
         else:
             # K-fold cross validation
-            k_fold_cm = cross_validate(self.classifier, X=self.X_train, y=self.Y_train, scoring=['accuracy', 'roc_auc'], cv=K_fold,
+            k_fold_cm = cross_validate(self.classifier, X=self.x_train, y=self.y_train, scoring=['accuracy', 'roc_auc'], cv=K_fold,
                                        return_train_score=True, return_estimator=True)
             self.train_acc, self.train_roc_acu = np.mean(k_fold_cm['train_accuracy']), np.mean(k_fold_cm['train_roc_auc'])
             self.val_acc, self.val_roc_auc = np.mean(k_fold_cm['test_accuracy']), np.mean(k_fold_cm['test_roc_auc'])
 
             if verbose:
-                st.text("{}-fold train performance: Accuracy = {:.3f} | ROC AUC = {:.3f}".format(K_fold, self.train_acc, self.train_roc_acu))
-                st.text("{}-fold validation performance: Accuracy = {:.3f} | ROC AUC = {:.3f}".format(K_fold, self.val_acc, self.val_roc_auc))
+                st.text('{}-fold train performance: Accuracy = {:.3f} | ROC AUC = {:.3f}'.format(K_fold, self.train_acc, self.train_roc_acu))
+                st.text('{}-fold validation performance: Accuracy = {:.3f} | ROC AUC = {:.3f}'.format(K_fold, self.val_acc, self.val_roc_auc))
 
             # Select best parameters
             validation_performance = k_fold_cm['test_roc_auc']
             self.best_classifier = k_fold_cm['estimator'][np.argmax(validation_performance)]
 
     def evaluate(self, verbose=False):
-        self.Y_train_pred = self.best_classifier.predict(self.X_train)
-        self.Y_test_pred = self.best_classifier.predict(self.X_test)
+        self.y_train_pred = self.best_classifier.predict(self.x_train)
+        self.y_test_pred = self.best_classifier.predict(self.x_test)
 
-        self.test_acc = accuracy_score(y_true=self.Y_test, y_pred=self.Y_test_pred)
-        self.test_f1 = f1_score(y_true=self.Y_test, y_pred=self.Y_test_pred, average='weighted')
+        self.test_acc = accuracy_score(y_true=self.y_test, y_pred=self.y_test_pred)
+        self.test_f1 = f1_score(y_true=self.y_test, y_pred=self.y_test_pred, average='weighted')
         if verbose:
-            st.text("{} test performance: Accuracy = {:.3f} | Weighted F1 = {:.3f}".format(self.model_name, self.test_acc, self.test_f1))
+            st.text('{} test performance: Accuracy = {:.3f} | Weighted F1 = {:.3f}'.format(self.model_name, self.test_acc, self.test_f1))
 
     def visualize(self):
         with st.expander('Confusion matrix'):

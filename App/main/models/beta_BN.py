@@ -4,7 +4,7 @@ import bnlearn as bn
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from main.models.BaseModel import BaseModel
+from App.main.models.base_model import BaseModel
 
 
 # DEFINE MODEL -------------------------------------------------------------

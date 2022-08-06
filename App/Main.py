@@ -1,26 +1,25 @@
-"""GSurvWeb
+'''GSurvWeb: Open source interactive web application for transplant graft survival prediction
 
 Example:
     To run the streamlit app please use:
-        $ streamlit run Main.py
+        $ streamlit run App/Main.py
 
     To pass command line options use:
-        $ streamlit run Main.py -- --h
-        $ streamlit run Main.py -- --develop
+        $ streamlit run App/Main.py -- --h
+        $ streamlit run App/Main.py -- --develop
 
 Todo:
     * Update introduction once publication accepted.
-"""
+'''
 
 
 # LOAD DEPENDENCY ----------------------------------------------------------
 import argparse
 import random
-from matplotlib import path
 import streamlit as st
 import pandas as pd
 
-from main.interactive import interactive_run
+from main.interactive import interactive_runX
 from main.experiment import experiment
 from main.data_summary import data_summary
 
@@ -33,15 +32,15 @@ def load_data(uploaded_file):
             file = pd.read_excel(uploaded_file, sheet_name=None)
             st.sidebar.success('File Uploaded Successfully')
         except UnicodeDecodeError as error:
-            st.error(f"error loading log.las: {error}")
+            st.error(f'error loading log.las: {error}')
         return file, True
     else:
         return None, False
 
 def reset_session_state(verbose=False):
-    """Resets the session state when app mode changes.
+    '''Resets the session state when app mode changes.
     Session State is an internal Streamlit method used to share variables between reruns.
-    """
+    '''
     if verbose:
         print('session status | current mode: {} | previous mode: {}'.format(st.session_state['app_mode'], st.session_state['prev_app_mode']))
 
@@ -52,7 +51,7 @@ def reset_session_state(verbose=False):
     st.session_state['prev_app_mode'] = st.session_state['app_mode']
 
 def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', verbose=False):
-    """main file for running streamlit
+    '''main file for running streamlit
 
     Args:
         dev_mode (bool, optional):
@@ -67,17 +66,16 @@ def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', v
 
     Returns:
         None
-    """
-
+    '''
     # Introduction
-    st.title("GSurvWeb: Transplant graft Data Summary")
-    st.info("❗Work in progress. The output is not clinically validated.")
+    st.title('GSurvWeb: Transplant graft Data Summary')
+    st.info('❗Work in progress. The output is not clinically validated.')
     st.write('This is a tool currently in development designed using Python and Streamlit \
         to help you run basic machine learning algorithms on your dataset')
-    st.write("Created by Woochan Hwang (Fy1, Guy's and St.Thomas'). Work submitted for peer review.")
+    st.write('Created by Woochan Hwang (Fy1, Guy's and St.Thomas'). Work submitted for peer review.')
 
     # Sidebar
-    st.sidebar.title("Start Options")
+    st.sidebar.title('Start Options')
     st.sidebar.write('To begin using the app, load your dataset using the file upload option below.')
 
     # Load file
@@ -114,16 +112,14 @@ def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', v
             dev(file, verbose=verbose)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     random.seed(2021)
-
     # custom command line options using argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--develop', action='store_true', required=False, help='run developer mode with beta features included')
     parser.add_argument('-p', '--path_to_data', action='store', required=False, help='provide path to data in development mode via CLI')
     parser.add_argument('-v', '--verbose', action='store_true', required=False, help='print detailed status on command line')
     args = parser.parse_args()
-
     print('Running command line arguments: {}'.format(vars(args)))
 
     if args.develop:

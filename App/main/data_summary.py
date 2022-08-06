@@ -3,7 +3,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-from main.models.CART import RegressionTree
+from App.main.models.cart_model import RegressionTree
 from lifelines import KaplanMeierFitter, NelsonAalenFitter
 
 # MAIN SCRIPT --------------------------------------------------------------
@@ -34,36 +34,36 @@ def data_summary(file, verbose):
         st.stop()
 
     # Preprocess data
-    st.write("### Dataset")
+    st.write('### Dataset')
     model.process_input_options(verbose=False)
 
-    model.X['Event_observed'] = np.zeros(model.Y.size)
-    for idx, duration in model.Y.iteritems():
+    model.x['Event_observed'] = np.zeros(model.y.size)
+    for idx, duration in model.y.iteritems():
         if duration < 365:
-            model.X.at[idx, 'Event_observed'] = 1
+            model.x.at[idx, 'Event_observed'] = 1
 
     st.write('**Summary generated using pandas**')
     st.dataframe(model.dataframe.describe())
 
     show_data = st.checkbox('Select to show uploaded dataset')    
     if show_data:
-        st.write("**Uploaded dataset**")
+        st.write('**Uploaded dataset**')
         st.dataframe(model.dataframe)
 
     # Univariate Models
-    st.write("### Univariate Models")
+    st.write('### Univariate Models')
 
     fig_uni, (ax1_uni, ax2_uni) = plt.subplots(1, 2, figsize=(12, 4))
 
     kmf = KaplanMeierFitter()
-    kmf.fit(durations=np.asarray(model.Y), event_observed=np.asarray(model.X['Event_observed']), label='Kaplan Meier Estimate')
+    kmf.fit(durations=np.asarray(model.y), event_observed=np.asarray(model.x['Event_observed']), label='Kaplan Meier Estimate')
     kmf.plot(ax=ax1_uni)
     ax1_uni.set_title('Kaplan Meier survival estimate')
     ax1_uni.set_xlabel('Time [days]')
     ax1_uni.set_ylabel('Survival probability')
 
     naf = NelsonAalenFitter()
-    naf.fit(durations=np.asarray(model.Y), event_observed=np.asarray(model.X['Event_observed']), label='Nelson Aalen Estimate')
+    naf.fit(durations=np.asarray(model.y), event_observed=np.asarray(model.x['Event_observed']), label='Nelson Aalen Estimate')
     naf.plot_cumulative_hazard(ax=ax2_uni)
     ax2_uni.set_title('Nelson Aalen hazard estimate')
     ax2_uni.set_xlabel('Time [days]')

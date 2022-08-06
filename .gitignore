@@ -3,6 +3,7 @@
 .pytest_cache
 .vscode
 .coverage
+.pylintrc
 
 *.pyc
 *.pdf
@@ -10,7 +11,3 @@
 local/
 venv/
 __pycache__/
-
-tree.png
-tree.dot
-oryx-build-commands.txt

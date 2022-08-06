@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from main.models.BaseModel import BaseModel
+from App.main.models.base_model import BaseModel
 from lifelines import CoxPHFitter
 from lifelines.utils import concordance_index
 
@@ -17,25 +17,25 @@ class CoxProportionalHazardsRegression(BaseModel):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "Cox Proportional Hazards"
+        self.model_name = 'Cox Proportional Hazards'
         self.iterable_model_options_dict = {}
 
     def create_event_status(self, duration_days: int):
-        self.X['Event_observed'] = np.zeros(self.Y.size)
-        for idx, duration in self.Y.iteritems():
+        self.x['Event_observed'] = np.zeros(self.y.size)
+        for idx, duration in self.y.iteritems():
             if duration < duration_days:
-                self.X.at[idx, 'Event_observed'] = 1
+                self.x.at[idx, 'Event_observed'] = 1
 
     def combine_outcome_data(self):
         # combine outcome into same dataframe for CoxPH
-        self.train_dataframe = pd.concat([self.X_train, self.Y_train], axis=1)
-        self.test_dataframe = pd.concat([self.X_test, self.Y_test], axis=1)
+        self.train_dataframe = pd.concat([self.x_train, self.y_train], axis=1)
+        self.test_dataframe = pd.concat([self.x_test, self.y_test], axis=1)
 
     def build_estimator(self):
         self.estimator = CoxPHFitter()
 
     def train(self):
-        self.estimator.fit(self.train_dataframe, duration_col=self.Y.name, event_col='Event_observed')
+        self.estimator.fit(self.train_dataframe, duration_col=self.y.name, event_col='Event_observed')
 
     def evaluate(self, verbose=verbose):
         # Train
@@ -46,8 +46,8 @@ class CoxProportionalHazardsRegression(BaseModel):
         test_prediction = self.estimator.predict_expectation(self.test_dataframe)
         self.test_concordance_index = concordance_index(event_times=self.test_dataframe['Graft survival censored'], predicted_scores=test_prediction,
                                                 event_observed=self.test_dataframe['Event_observed'])
-        st.write("Train concordance index: {:.3f}".format(self.train_concordance_index))
-        st.write("Test concordance index: {:.3f}".format(self.test_concordance_index))
+        st.write('Train concordance index: {:.3f}'.format(self.train_concordance_index))
+        st.write('Test concordance index: {:.3f}'.format(self.test_concordance_index))
     
         if verbose:
             st.write(self.estimator.summary)
@@ -55,7 +55,7 @@ class CoxProportionalHazardsRegression(BaseModel):
     def plot_coefficients(self):
             fig = plt.figure()
             ax = fig.add_subplot()
-            ax.set_title("Coefficient plot")
+            ax.set_title('Coefficient plot')
             self.estimator.plot(ax=ax)
             st.pyplot(fig)
 

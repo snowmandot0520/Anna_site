@@ -2,10 +2,10 @@
 import numpy as np
 import streamlit as st
 
-from main.models.BaseModel import BaseModel
+from App.main.models.base_model import BaseModel
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import *
-from sklearn.model_selection import train_test_split, cross_validate
+from sklearn.model_selection import cross_validate
 from lifelines.utils import concordance_index
 
 # DEFINE MODEL -------------------------------------------------------------
@@ -13,7 +13,7 @@ class MultiLayerPerceptron(BaseModel):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "Multi-layer Perceptron Regressor"
+        self.model_name = 'Multi-layer Perceptron Regressor'
         self.hidden_layer_sizes = (100,)
         self.activation = 'relu'
         self.alpha = 0.001
@@ -25,30 +25,30 @@ class MultiLayerPerceptron(BaseModel):
     def train(self, K_fold = 5, verbose=False):
 
         # K-fold cross validation
-        k_fold_cm = cross_validate(self.estimator, X=self.X_train, y=self.Y_train, scoring=['neg_root_mean_squared_error', 'r2'], cv=K_fold,
+        k_fold_cm = cross_validate(self.estimator, X=self.x_train, y=self.y_train, scoring=['neg_root_mean_squared_error', 'r2'], cv=K_fold,
                                    return_train_score=True, return_estimator=True)
         self.train_acc, self.train_r2 = np.mean(k_fold_cm['train_neg_root_mean_squared_error']), np.mean(k_fold_cm['train_r2'])
         self.val_acc, self.val_r2 = np.mean(k_fold_cm['test_neg_root_mean_squared_error']), np.mean(k_fold_cm['test_r2'])
 
         if verbose:
-            st.text("{}-fold train performance: RMSE = {:.3f} | R^2 = {:.3f}".format(K_fold, self.train_acc, self.train_r2))
-            st.text("{}-fold validation performance: RMSE = {:.3f} | R^2 = {:.3f}".format(K_fold, self.val_acc, self.val_r2))
+            st.text('{}-fold train performance: RMSE = {:.3f} | R^2 = {:.3f}'.format(K_fold, self.train_acc, self.train_r2))
+            st.text('{}-fold validation performance: RMSE = {:.3f} | R^2 = {:.3f}'.format(K_fold, self.val_acc, self.val_r2))
 
         # Select best parameters
         validation_performance = k_fold_cm['test_neg_root_mean_squared_error']
         self.best_estimator = k_fold_cm['estimator'][np.argmax(validation_performance)]
 
     def evaluate(self, verbose=False):
-        self.Y_train_pred = self.best_estimator.predict(self.X_train)
-        self.Y_test_pred = self.best_estimator.predict(self.X_test)
+        self.y_train_pred = self.best_estimator.predict(self.x_train)
+        self.y_test_pred = self.best_estimator.predict(self.x_test)
 
-        self.test_acc = mean_squared_error(y_true=self.Y_test, y_pred=self.Y_test_pred, squared=False)
-        self.test_r2 = r2_score(y_true=self.Y_test, y_pred=self.Y_test_pred)
+        self.test_acc = mean_squared_error(y_true=self.y_test, y_pred=self.y_test_pred, squared=False)
+        self.test_r2 = r2_score(y_true=self.y_test, y_pred=self.y_test_pred)
         if verbose:
-            st.text("{} test performance: RMSE = {:.3f} | R^2 = {:.3f}".format(self.model_name, self.test_acc, self.test_r2))
+            st.text('{} test performance: RMSE = {:.3f} | R^2 = {:.3f}'.format(self.model_name, self.test_acc, self.test_r2))
 
-        self.train_ci = concordance_index(event_times=self.Y_train, predicted_scores=self.Y_train_pred)
-        self.test_ci = concordance_index(event_times=self.Y_test, predicted_scores=self.Y_test_pred)
+        self.train_ci = concordance_index(event_times=self.y_train, predicted_scores=self.y_train_pred)
+        self.test_ci = concordance_index(event_times=self.y_test, predicted_scores=self.y_test_pred)
 
     def visualize(self):
         with st.beta_expander('Confusion matrix'):
