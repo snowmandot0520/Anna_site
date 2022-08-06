@@ -1,0 +1,12 @@
+bnlearn==0.7.3
+gpflow==2.5.2
+joblib==1.1.0
+lifelines==0.27.1
+matplotlib==3.5.2
+networkx==2.8.4
+numpy==1.23.1
+pandas==1.4.3
+scikit_learn==1.1.1
+streamlit==1.11.1
+tensorflow==2.9.1
+tensorflow_probability==0.17.0
