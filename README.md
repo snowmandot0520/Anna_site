@@ -6,7 +6,7 @@
 #### Open source interactive web application for transplant graft survival prediction  
 
 ## Project Scope
-This repository focuses on quantitative analysis of graft function in all renal transplants within Guy's and St.Thomas' NHS Trust between 2009-2019. Patient data is confidential and remains excluded from this repository. 
+This project is focused on creating an interactive web application with tools specific for transplant graft survival prediction. The project started in 2021 with the motivation of analyzing a database of renal transplants within Guy's and St.Thomas' NHS Trust between 2009-2019. The current version is hence developed with certain assumptions that may only be specific to our database. We hope to create an application that covers most basic use cases for clinician researchers with limited software engineering experience and flexibility to allow more advanced users to extend custom models and functions with ease. Patient data is confidential and will remain excluded from this repository. 
 
 
 ### **Table of Contents**
@@ -33,6 +33,7 @@ To launch the web app simply click on the streamlit app icon under the title. Th
 
 This app has been developed based on [Streamlit](https://streamlit.io/), a pythonic open-source app framework for Machine Learning. We would strongly recommend joining the streamlit community if you are used to handling data but less so in front-end development of web apps. 
 
+
 ## Deploy Locally
 
 ### Requirements
@@ -53,7 +54,9 @@ streamlit run App/Main.py
 
 ### Data Guidance
 
-Guide for formatting your data. 
+As explained in the [project scope](#project-scope), the current release is focused on use cases based on a database collected from a single institution. Therefore there are some assumptions that have been made regarding the format of the data uploaded for analysis. Please use the [example template](https://github.com/woochan-hwang/GSurvWeb/blob/main/App/data/example_data_template.xlsx) provided as a guidance. 
+
+Please note the additional sheets in the template file. The 'Data Code' sheet details what type of data each variable is. This allows the app to show appropriate options. The 'Data Range' sheet is specific for visualization of the cox proportional hazards model. Any continuous variable that will be used as an input for the cox model should be included in this sheet. 
 
 ### Developer Mode
 
@@ -61,7 +64,6 @@ For users extending this repository, we have provided command line options to he
 
 ```bash
 # custom arguments must be passed after two dashes, otherwise they will be interpreted as arguments to Streamlit itself.
-
 streamlit run App/Main.py -- -h  # show possible CLI arguments
 streamlit run App/Main.py -- -v  # verbose
 
@@ -77,7 +79,6 @@ streamlit run App/Main.py --dev
 streamlit run App/Main.py -- -d, -p='example/path_to/data.xlsx'
 streamlit run App/Main.py -- --develop, --path_to_data='example/path_to/data.xlsx'
 ```
-
 
 ### Custom Models
 
@@ -100,7 +101,6 @@ App/
 Tests/
 ```
 
-
 ### Unit Testing
 
 This project uses the [Pytest](https://docs.pytest.org/en/7.1.x/) framework for setting up unit tests. The current tests are set up to check deployment of mainly the frontend api rather than the analysis of the provided data. Testing of the model's performance given various possible user uploads are essential in making this project more reliable. The authors have only checked reliability for the data used for our publication. 
@@ -112,7 +112,6 @@ To run tests before deployment, simply run:
 ```bash
 pytest  # use -v option for detailed test results
 ```
-
 
 ### Streamlit Tips
 
@@ -136,6 +135,7 @@ The work was started by a group of transplant surgeons at [Guy's and St.Thomas' 
 
 **Authors:**
 Dr Woochan Hwang, Mr Usman Harron, Mr Ravindhran Bharadhwaj, Mr Toroth Ameen, Mr Pankaj Chandak, Miss Zakri Rhana 
+
 
 ## Citing 
 This work is currently submitted for peer review. 
