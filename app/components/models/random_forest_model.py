@@ -31,8 +31,8 @@ class RandomForest(BaseModel):
             'max_depth':self.max_depth, 'max_depth_list':self.max_depth_list
             }
 
-    def build_classifier(self):
-        self.classifier = RandomForestClassifier(
+    def build_estimator(self):
+        self.estimator = RandomForestClassifier(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth,
             criterion=self.criterion, class_weight=self.class_weight
@@ -44,12 +44,12 @@ class RandomForest(BaseModel):
                 self.estimator,
                 n_features_to_select=self.n_features_to_select,
                 step=self.rfe_step)
-            self.best_classifier = selector.fit(self.x_train, self.y_train)
+            self.best_estimator = selector.fit(self.x_train, self.y_train)
             self.sort_feature_importance()
         else:
             # K-fold cross validation
             k_fold_cm = cross_validate(
-                self.classifier, X=self.x_train, y=self.y_train,
+                self.estimator, X=self.x_train, y=self.y_train,
                 scoring=['accuracy', 'roc_auc'], cv=k_fold,
                 return_train_score=True, return_estimator=True
                 )
@@ -66,11 +66,11 @@ class RandomForest(BaseModel):
 
             # Select best parameters
             validation_performance = k_fold_cm['test_roc_auc']
-            self.best_classifier = k_fold_cm['estimator'][np.argmax(validation_performance)]
+            self.best_estimator = k_fold_cm['estimator'][np.argmax(validation_performance)]
 
     def evaluate(self, verbose=False):
-        self.y_train_pred = self.best_classifier.predict(self.x_train)
-        self.y_test_pred = self.best_classifier.predict(self.x_test)
+        self.y_train_pred = self.best_estimator.predict(self.x_train)
+        self.y_test_pred = self.best_estimator.predict(self.x_test)
 
         self.test_acc = accuracy_score(y_true=self.y_test, y_pred=self.y_test_pred)
         self.test_f1 = f1_score(y_true=self.y_test, y_pred=self.y_test_pred, average='weighted')
