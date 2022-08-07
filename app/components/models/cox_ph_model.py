@@ -1,5 +1,6 @@
+"""Implements Cox Proportional Hazards Model and appropriate visualizations."""
+
 # LOAD DEPENDENCY ----------------------------------------------------------
-from tabnanny import verbose
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ from lifelines.utils import concordance_index
 
 # CLASS  OBJECT -----------------------------------------------------------
 class CoxProportionalHazardsRegression(BaseModel):
-
+    """Implements Cox Proportional Hazards Model and appropriate visualizations."""
     def __init__(self):
         super().__init__()
         self.model_name = 'Cox Proportional Hazards'
@@ -36,27 +37,33 @@ class CoxProportionalHazardsRegression(BaseModel):
     def train(self):
         self.estimator.fit(self.train_dataframe, duration_col=self.y.name, event_col='Event_observed')
 
-    def evaluate(self, verbose=verbose):
+    def evaluate(self, verbose):
         # Train
         train_prediction = self.estimator.predict_expectation(self.train_dataframe)
-        self.train_concordance_index = concordance_index(event_times=self.train_dataframe[self.label_feature], predicted_scores=train_prediction,
-                                                event_observed=self.train_dataframe['Event_observed'])
+        self.train_concordance_index = concordance_index(
+            event_times=self.train_dataframe[self.label_feature],
+            predicted_scores=train_prediction,
+            event_observed=self.train_dataframe['Event_observed']
+            )
         # Test
         test_prediction = self.estimator.predict_expectation(self.test_dataframe)
-        self.test_concordance_index = concordance_index(event_times=self.test_dataframe[self.label_feature], predicted_scores=test_prediction,
-                                                event_observed=self.test_dataframe['Event_observed'])
-        st.write('Train concordance index: {:.3f}'.format(self.train_concordance_index))
-        st.write('Test concordance index: {:.3f}'.format(self.test_concordance_index))
-    
+        self.test_concordance_index = concordance_index(
+            event_times=self.test_dataframe[self.label_feature],
+            predicted_scores=test_prediction,
+            event_observed=self.test_dataframe['Event_observed']
+            )
+        st.write(f'Train concordance index: {self.train_concordance_index:.3f}')
+        st.write(f'Test concordance index: {self.test_concordance_index:.3f}')
+
         if verbose:
             st.write(self.estimator.summary)
 
     def plot_coefficients(self):
-            fig = plt.figure()
-            ax = fig.add_subplot()
-            ax.set_title('Coefficient plot')
-            self.estimator.plot(ax=ax)
-            st.pyplot(fig)
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        ax.set_title('Coefficient plot')
+        self.estimator.plot(ax=ax)
+        st.pyplot(fig)
 
     def plot_partial_effects(self, selected_covariates):
 
@@ -68,7 +75,11 @@ class CoxProportionalHazardsRegression(BaseModel):
             for i, covariate in enumerate(selected_covariates):
                 ax = fig_multi.add_subplot(gs[i])
                 ax.set_title(covariate)
-                self.estimator.plot_partial_effects_on_outcome(covariates=covariate, values=self.covariate_range_dict[covariate], ax=ax)
+                self.estimator.plot_partial_effects_on_outcome(
+                    covariates=covariate,
+                    values=self.covariate_range_dict[covariate],
+                    ax=ax
+                    )
 
             gs.tight_layout(fig_multi)
             st.pyplot(fig_multi)
@@ -80,10 +91,14 @@ class CoxProportionalHazardsRegression(BaseModel):
             self.plot_coefficients()
 
     def save_log(self):
-        cache = {'model': self.model_name, 'input_features': self.input_features, 'label_feature': self.label_feature,
-            'train_concordance_index': self.train_concordance_index, 'test_concordance_index': self.test_concordance_index
-        }
+        cache = {
+            'model': self.model_name, 'input_features': self.input_features,
+            'label_feature': self.label_feature,
+            'train_concordance_index': self.train_concordance_index,
+            'test_concordance_index': self.test_concordance_index
+           }
         self.log = pd.DataFrame(data=cache)
 
     def save_fig(self):
         self.fig_list = []
+        

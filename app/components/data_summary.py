@@ -15,7 +15,7 @@ def process_options(model, selected_features, selected_label, censoring, duratio
     model.create_label_feature(label_feature=selected_label, censoring=censoring, duration=duration)
     return model
 
-def data_summary(file, verbose):
+def data_summary(file):
     st.header('Data Summary')
     st.write('#### Basic survival analysis of uploaded data')
     selected_label = 'Survival time [days]'
@@ -40,7 +40,7 @@ def data_summary(file, verbose):
         st.stop()
 
     st.write('### Dataset')
-    model.process_input_options(verbose=verbose)
+    model.process_input_options()
 
     model.x['Event_observed'] = np.zeros(model.y.size)
     for idx, duration in model.y.iteritems():

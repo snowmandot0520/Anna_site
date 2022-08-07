@@ -1,3 +1,6 @@
+"""Implements CART(Classification And Regression Tree), a predictive model
+which explains how an outcome variable's values can be predicted based on other values,
+with appropriate visualizations"""
 # LOAD DEPENDENCY ----------------------------------------------------------
 import numpy as np
 import pandas as pd
@@ -8,13 +11,13 @@ from app.components.models.base_model import BaseModel
 from app.components.utils.rfecv import RFECV
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import tree
-from sklearn.metrics import *
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import cross_validate
 from lifelines.utils import concordance_index
 
 # DEFINE MODEL -------------------------------------------------------------
 class RegressionTree(BaseModel):
-
+    """Implements a CART model"""
     def __init__(self):
         super().__init__()
         self.model_name = 'Regression Tree'
@@ -24,29 +27,35 @@ class RegressionTree(BaseModel):
         self.max_depth = int()
         self.max_depth_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.iterable_model_options_dict = {'max_leaf_nodes':self.max_leaf_nodes, 'max_depth':self.max_depth,
-                                            'max_leaf_nodes_list':self.max_leaf_nodes_list, 'max_depth_list':self.max_depth_list}
+                                            'max_leaf_nodes_list':self.max_leaf_nodes_list,
+                                            'max_depth_list':self.max_depth_list}
 
     def build_estimator(self):
         self.estimator = DecisionTreeRegressor(criterion=self.criterion, splitter='best')
 
-    def train(self, K_fold = 5, verbose=False):
-
+    def train(self, k_fold=5, verbose=False):
         if self.rfe:
-            self.selector = RFECV(self.estimator, scoring='neg_root_mean_squared_error', cv=K_fold, n_jobs=1)
+            self.selector = RFECV(self.estimator, scoring='neg_root_mean_squared_error', cv=k_fold, n_jobs=1)
             self.best_estimator = self.selector.fit(self.x_train, self.y_train)
             self.sort_feature_importance()
             self.train_acc, self.train_r2, self.val_acc, self.val_r2 = np.NaN, np.NaN, np.NaN, np.NaN
-
         else:
             # K-fold cross validation
-            k_fold_cm = cross_validate(self.estimator, X=self.x_train, y=self.y_train, scoring=['neg_root_mean_squared_error', 'r2'], cv=K_fold,
-                                       return_train_score=True, return_estimator=True)
-            self.train_acc, self.train_r2 = np.mean(k_fold_cm['train_neg_root_mean_squared_error']), np.mean(k_fold_cm['train_r2'])
-            self.val_acc, self.val_r2 = np.mean(k_fold_cm['test_neg_root_mean_squared_error']), np.mean(k_fold_cm['test_r2'])
+            k_fold_cm = cross_validate(
+                self.estimator, X=self.x_train, y=self.y_train,
+                scoring=['neg_root_mean_squared_error', 'r2'],
+                cv=k_fold,
+                return_train_score=True,
+                return_estimator=True
+                )
+            self.train_acc = np.mean(k_fold_cm['train_neg_root_mean_squared_error'])
+            self.train_r2 = np.mean(k_fold_cm['train_r2'])
+            self.val_acc = np.mean(k_fold_cm['test_neg_root_mean_squared_error'])
+            self.val_r2 = np.mean(k_fold_cm['test_r2'])
 
             if verbose:
-                st.text('{}-fold train performance: RMSE = {:.3f} | R^2 = {:.3f}'.format(K_fold, self.train_acc, self.train_r2))
-                st.text('{}-fold validation performance: RMSE = {:.3f} | R^2 = {:.3f}'.format(K_fold, self.val_acc, self.val_r2))
+                st.text(f'{k_fold}-fold train performance: RMSE = {self.train_acc:.3f} | R^2 = {self.train_r2:.3f}')
+                st.text(f'{k_fold}-fold validation performance: RMSE = {self.val_acc:.3f} | R^2 = {self.val_r2:.3f}')
 
             # Select best parameters
             validation_performance = k_fold_cm['test_neg_root_mean_squared_error']
@@ -64,23 +73,20 @@ class RegressionTree(BaseModel):
         self.test_ci = concordance_index(event_times=self.y_test, predicted_scores=self.y_test_pred)
 
         if verbose:
-            st.text('{} train performance: RMSE = {:.3f} | R^2 = {:.3f} | CI = {:.4f}'.format(self.model_name, self.train_acc, self.train_r2, self.train_ci))
-            st.text('{} test performance: RMSE = {:.3f} | R^2 = {:.3f} | CI = {:.4f}'.format(self.model_name, self.test_acc, self.test_r2, self.test_ci))
+            st.text(f'{self.model_name} train performance: RMSE = {self.train_acc:.3f} | '
+                f'R^2 = {self.train_r2:.3f} | CI = {self.train_ci:.4f}')
+            st.text(f'{self.model_name} test performance: RMSE = {self.test_acc:.3f} | '
+                f'R^2 = {self.test_r2:.3f} | CI = {self.test_ci:.4f}')
 
     def visualize(self):
-
-        with st.expander('Plot data distribution'.format(self.model_name)):
-
+        with st.expander('Plot data distribution'):
             fig_hist, ax_hist = plt.subplots()
             ax_hist.hist(self.y_train, bins=range(0,max(366, int(max(self.y_train)))))
             fig_hist.tight_layout()
-
             st.pyplot(fig_hist)
             self.fig_hist = fig_hist
 
         with st.expander('Plot outcome'):
-            print(self.rfe)
-
             if self.rfe:
                 self.plot_recursive_feature_elimination_cross_validation_test()
                 estimator = self.best_estimator.estimator_
@@ -91,7 +97,6 @@ class RegressionTree(BaseModel):
             tree.plot_tree(estimator, ax=ax_tree)
             fig_tree.tight_layout()
             fig_tree.suptitle('Tree visualisation')
-
             st.pyplot(fig_tree)
             self.fig_tree = fig_tree
 
@@ -104,7 +109,6 @@ class RegressionTree(BaseModel):
                  'train_ci':self.train_ci, 'test_ci':self.test_ci}
         if self.rfe:
             cache.update({'features_sorted_by_importance':self.sorted_features})
-
         print(cache)
         self.log = pd.DataFrame(data=cache)
 
@@ -112,3 +116,4 @@ class RegressionTree(BaseModel):
         self.fig_list = [self.fig_hist, self.fig_tree]
         if self.rfe:
             self.fig_list.append(self.fig_rfecv)
+            

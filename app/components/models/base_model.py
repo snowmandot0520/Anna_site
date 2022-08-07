@@ -112,7 +112,7 @@ class BaseModel(ABC):
                     censor_duration_days=duration
                     )
             else:
-                self.label_feature = f'Survival time uncensored [days]'
+                self.label_feature = 'Survival time uncensored [days]'
                 label = self.calculate_survival()
         else:
             raise ValueError(f'defined label: {label_feature} is not defined')
@@ -120,12 +120,12 @@ class BaseModel(ABC):
         self.label = pd.Series(data=label, name=self.label_feature)
         self.dataframe = pd.concat([self.dataframe, self.label], axis=1)
 
-    def process_input_options(self, verbose=True):
+    def process_input_options(self):
         # Only focusing on deceased donor transplants for the purpose of this prototype
         transplant_subset = ['DBD kidney transplant', 'DCD kidney transplant']
         self.dataframe = self.dataframe[self.dataframe['Transplant type'].isin(transplant_subset)].copy()
         self.dataframe.replace('n/a', np.NaN, inplace=True)
-        self.dataframe.dropna(axis=0, how='any', subset=self.input_features + [self.label_feature], inplace=True)  
+        self.dataframe.dropna(axis=0, how='any', subset=self.input_features + [self.label_feature], inplace=True)
 
         if self.dataframe.shape[0] <= 0:
             st.info('❗Not enough samples to proceed analysis. Please reselect options.')

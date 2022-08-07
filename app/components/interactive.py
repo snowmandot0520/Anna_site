@@ -24,7 +24,10 @@ def interactive(file, verbose):
         st.write('\n')
         show_data = st.checkbox('Show raw data')
 
-        selected_label = st.selectbox('Prediction target:', ['Survival time [days]', 'Failure within given duration [y/n]'])
+        selected_label = st.selectbox(
+            'Prediction target:',
+            ['Survival time [days]', 'Failure within given duration [y/n]']
+            )
         if selected_label == 'Failure within given duration [y/n]':
             duration = st.number_input('Failed within [days]', min_value=1, max_value=365, format='%i', value=365,
                 help='This input will be used to create boolean labels for classification models')
