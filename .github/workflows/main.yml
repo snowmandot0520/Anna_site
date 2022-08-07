@@ -24,14 +24,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      #- name: Lint with flake8
-      #  run: |
-      #    # stop the build if there are Python syntax errors or undefined names
-      #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-      #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-      #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics\
       - name: Test with pytest
         run: |
           pip install pytest
           pip install pytest-cov
           pytest tests --cov-report=xml --cov-report=html
+      - name: Python Linter
+        # You may pin to the exact commit or the version.
+        # uses: sunnysid3up/python-linter@93076bd8f740f062069291d738fc70c1b4171c1d
+        uses: sunnysid3up/python-linter@v0.1-beta.7
+        with:
+          # Source file or directory
+          source: "main.py app"
+          # Set strictness for lint [low, medium, high]
+          strict: # optional, default is medium
+          # Mypy options
+          mypy-options: # optional, default is 
+          # Pylint options
+          pylint-options: --rcfile=.pylintrc
+          # Black options
+          black-options: # optional, default is 
+          # Isort options
+          isort-options: # optional, default is 
+          # Confirm if source is a Django project
+          django: # optional
