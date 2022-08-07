@@ -39,12 +39,12 @@ jobs:
           # Set strictness for lint [low, medium, high]
           strict: # optional, default is medium
           # Mypy options
-          mypy-options: # optional, default is 
+          mypy-options: false # optional, default is 
           # Pylint options
           pylint-options: --rcfile=.pylintrc
           # Black options
-          black-options: # optional, default is 
+          black-options: false # optional, default is 
           # Isort options
-          isort-options: # optional, default is 
+          isort-options: false # optional, default is 
           # Confirm if source is a Django project
-          django: # optional
+          django: false # optional
