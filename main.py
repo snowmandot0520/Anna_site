@@ -116,7 +116,7 @@ def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', v
                 )
         # run selected app mode
         if app_mode == 'Data Summary':
-            data_summary.data_summary(file)
+            data_summary.data_summary(file, verbose=verbose)
         elif app_mode == 'Interactive':
             interactive.interactive(file, verbose=verbose)
         elif app_mode == 'Experiment':

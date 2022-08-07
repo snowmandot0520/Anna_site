@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 To launch the streamlit web app on an local machine:
 ```bash
-streamlit run App/Main.py
+streamlit run main.py
 ```
 
 ### Data Guidance
@@ -64,20 +64,20 @@ For users extending this repository, we have provided command line options to he
 
 ```bash
 # custom arguments must be passed after two dashes, otherwise they will be interpreted as arguments to Streamlit itself.
-streamlit run App/Main.py -- -h  # show possible CLI arguments
-streamlit run App/Main.py -- -v  # verbose
+streamlit run main.py -- -h  # show possible CLI arguments
+streamlit run main.py -- -v  # verbose
 
 # run app in developer mode to include beta functions and additional features
-streamlit run App/Main.py -- -d
-streamlit run App/Main.py -- --develop
+streamlit run main.py -- -d
+streamlit run main.py -- --develop
 
 # the following will be interpreted as a Streamlit option and give an error
-streamlit run App/Main.py --dev
+streamlit run main.py --dev
 
 # specify path to local data instead of using the upload option 
 # only available in develop mode 
-streamlit run App/Main.py -- -d, -p='example/path_to/data.xlsx'
-streamlit run App/Main.py -- --develop, --path_to_data='example/path_to/data.xlsx'
+streamlit run main.py -- -d, -p='example/path_to/data.xlsx'
+streamlit run main.py -- --develop, --path_to_data='example/path_to/data.xlsx'
 ```
 
 ### Custom Models
@@ -88,17 +88,17 @@ Once you have created a script for your custom script, update App/main/interacti
 
 ```bash
 # Structure of GSurvWeb
-App/
-├─ Main.py
+main.py
+app/
 ├─ main/
 │  ├─ models/
-│  │  ├─ BaseModel.py
-│  │  ├─ SVM.py
-│  │  ├─ RF.py
+│  │  ├─ base_model.py
+│  │  ├─ support_vector_machine_model.py
+│  │  ├─ random_forest_model.py
 │  ├─ survival_analysis.py
 │  ├─ experiment.py
 │  ├─ interactive.py
-Tests/
+tests/
 ```
 
 ### Unit Testing
@@ -118,7 +118,7 @@ pytest  # use -v option for detailed test results
 Streamlit can be deployed using streamlit cloud. However, one may wish to use other cloud services for development or deployment. In the case of the authors, we used the beta version of github codespaces to develop the initial version of this project. In such cases, the following script may circumvent some issues. [Click here](https://docs.streamlit.io/knowledge-base/deploy/remote-start) for more information on this issue.
 
 ```bash
-streamlit run App/Main.py --server.enableCORS=false --server.enableWebsocketCompression=false -- [custom arguments]
+streamlit run main.py --server.enableCORS=false --server.enableWebsocketCompression=false -- [custom arguments]
 ```
 
 

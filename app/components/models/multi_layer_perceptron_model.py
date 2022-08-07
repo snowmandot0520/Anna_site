@@ -2,7 +2,7 @@
 import numpy as np
 import streamlit as st
 
-from App.main.models.base_model import BaseModel
+from app.components.models.base_model import BaseModel
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import *
 from sklearn.model_selection import cross_validate

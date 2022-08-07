@@ -4,8 +4,8 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
-from App.main.models.base_model import BaseModel
-from main.utils.RFECV import RFECV
+from app.components.models.base_model import BaseModel
+from app.components.utils.rfecv import RFECV
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import tree
 from sklearn.metrics import *

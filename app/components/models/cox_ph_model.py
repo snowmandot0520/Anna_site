@@ -1,13 +1,12 @@
 # LOAD DEPENDENCY ----------------------------------------------------------
 from tabnanny import verbose
-from typing import List
 import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from App.main.models.base_model import BaseModel
+from app.components.models.base_model import BaseModel
 from lifelines import CoxPHFitter
 from lifelines.utils import concordance_index
 
@@ -40,11 +39,11 @@ class CoxProportionalHazardsRegression(BaseModel):
     def evaluate(self, verbose=verbose):
         # Train
         train_prediction = self.estimator.predict_expectation(self.train_dataframe)
-        self.train_concordance_index = concordance_index(event_times=self.train_dataframe['Graft survival censored'], predicted_scores=train_prediction,
+        self.train_concordance_index = concordance_index(event_times=self.train_dataframe[self.label_feature], predicted_scores=train_prediction,
                                                 event_observed=self.train_dataframe['Event_observed'])
         # Test
         test_prediction = self.estimator.predict_expectation(self.test_dataframe)
-        self.test_concordance_index = concordance_index(event_times=self.test_dataframe['Graft survival censored'], predicted_scores=test_prediction,
+        self.test_concordance_index = concordance_index(event_times=self.test_dataframe[self.label_feature], predicted_scores=test_prediction,
                                                 event_observed=self.test_dataframe['Event_observed'])
         st.write('Train concordance index: {:.3f}'.format(self.train_concordance_index))
         st.write('Test concordance index: {:.3f}'.format(self.test_concordance_index))

@@ -17,12 +17,7 @@ from abc import ABC, abstractmethod
 
 # ABSTRACT CLASS -----------------------------------------------------------
 class BaseModel(ABC):
-    '''Implements BaseModel which is an abstract class to be inherited by all model implementations.
-
-    Args:
-        ABC (_type_): _description_
-    '''
-
+    '''Implements BaseModel which is an abstract class to be inherited by all model implementations.'''
     def __init__(self):
         self.feature_dict = {}
         self.covariate_range_dict = {}
@@ -35,8 +30,23 @@ class BaseModel(ABC):
         self.rfe = False
         self.iterable_model_options_dict = {}
 
+    @abstractmethod
+    def train(self):
+        pass
+
+    @abstractmethod
+    def evaluate(self):
+        pass
+
+    @abstractmethod
+    def visualize(self):
+        pass
+
+    @abstractmethod
+    def save_log(self):
+        pass
+
     def get_dataframe(self, dataframe):
-        # Todo: implement dataframe sense check
         self.dataframe = dataframe
 
     def get_dataframe_code(self, dataframe_code):
@@ -63,46 +73,63 @@ class BaseModel(ABC):
         for key in self.dataframe.columns:
             if self.feature_dict[key] == 'con_input' or self.feature_dict[key] == 'cat_input':
                 self.available_input_features.append(key)
-
         return self.available_input_features
 
-    # TODO change hard encoded label features to more flexible form. Also consider run time calculation of survival.
-    def get_label_feature(self, label_feature, censoring=False):
-        if label_feature == 'Failure within 1 year [y/n]':
-            self.label_feature = 'Graft failed within 1 year of transplant? '
+    def calculate_survival(self):
+        self.survival = self.dataframe['Date of failure (kidney)'] - self.dataframe['Date of Transplant']
+        self.survival.where(self.survival > 0, 0, inplace=True)
+        return self.survival
+
+    def censor_survival(self, df_to_censor, censor_duration_days):
+        self.calculate_survival()
+        self.censored_survival = df_to_censor.where(
+            df_to_censor < censor_duration_days,
+            censor_duration_days
+        )
+        return self.censored_survival
+
+    def create_boolean_survival_status(self, cutoff_duration_days):
+        self.calculate_survival()
+        self.boolean_survival_status = self.survival.where(
+            self.survival < cutoff_duration_days,
+            True
+        )
+        self.boolean_survival_status.where(
+            self.survival >= cutoff_duration_days,
+            False, inplace=True
+        )
+        return self.boolean_survival_status
+
+    def create_label_feature(self, label_feature, censoring:bool, duration:int):
+        if label_feature == 'Failure within given duration [y/n]':
+            self.label_feature = f'Failure within {duration} days [y/n]'
+            label = self.create_boolean_survival_status(cutoff_duration_days=duration)
         elif label_feature == 'Survival time [days]':
             if censoring:
-                self.label_feature = 'Graft survival censored'
+                self.label_feature = f'Survival time censored to {duration} [days]'
+                label = self.censor_survival(
+                    df_to_censor=self.calculate_survival(),
+                    censor_duration_days=duration
+                    )
             else:
-                self.label_feature = 'Graft survival uncensored'
+                self.label_feature = f'Survival time uncensored [days]'
+                label = self.calculate_survival()
         else:
-            self.label_feature = label_feature
+            raise ValueError(f'defined label: {label_feature} is not defined')
+
+        self.label = pd.Series(data=label, name=self.label_feature)
+        self.dataframe = pd.concat([self.dataframe, self.label], axis=1)
 
     def process_input_options(self, verbose=True):
         # Only focusing on deceased donor transplants for the purpose of this prototype
         transplant_subset = ['DBD kidney transplant', 'DCD kidney transplant']
         self.dataframe = self.dataframe[self.dataframe['Transplant type'].isin(transplant_subset)].copy()
-
-        failure_proportion_predrop = float(sum(self.dataframe['Graft failed within 1 year of transplant? '] == 'Yes') /
-                                    len(self.dataframe['Graft failed within 1 year of transplant? ']))
-
-        if verbose:
-            st.text(f'Uploaded dataset (deceased donor subset): {self.dataframe.shape[0]} samples')
-            st.text(f'=> i.e {failure_proportion_predrop * 100:.1f} % positive for failure within 1 year')
-
         self.dataframe.replace('n/a', np.NaN, inplace=True)
-        self.dataframe.dropna(axis=0, how='any', subset=self.input_features + [self.label_feature], inplace=True)
+        self.dataframe.dropna(axis=0, how='any', subset=self.input_features + [self.label_feature], inplace=True)  
 
         if self.dataframe.shape[0] <= 0:
             st.info('❗Not enough samples to proceed analysis. Please reselect options.')
             st.stop()
-
-        self.class_proportion = float(sum(self.dataframe['Graft failed within 1 year of transplant? '] == 'Yes') /
-                            len(self.dataframe['Graft failed within 1 year of transplant? ']))
-
-        if verbose:
-            st.text(f'Post incomplete data removal: {self.dataframe.shape[0]} samples')
-            st.text(f'=> i.e {self.class_proportion * 100:.1f} % positive for failure within 1 year')
 
         self.input_features_cat = []
         for feature in self.input_features:
@@ -117,13 +144,13 @@ class BaseModel(ABC):
         self.y = self.dataframe[self.label_feature]
 
     def get_iterable_model_options(self, *args, **kwargs):
-        iterables = list()
+        iterables = []
         for option_list in args:
             # used for unordered multiselect inputs; i.e. criterion
             iterables.append(option_list)
-        for option in kwargs:
+        for option, value in kwargs.items():
             select_list = np.array(self.iterable_model_options_dict[option + '_list'])
-            min_val, max_val = kwargs[option]
+            min_val, max_val = value
             min_index = np.where(select_list==min_val)[0][0]
             max_index = np.where(select_list==max_val)[0][0]
             # select inclusively for ordered selections; i.e. c_params
@@ -140,8 +167,8 @@ class BaseModel(ABC):
             self.sorted_features[index] = item
             i += 1
 
-    def train_test_split(self, test_proportion, verbose=True):
-        stratify = self.y if self.feature_dict[self.label_feature] == 'cat_output' else None
+    def train_test_split(self, test_proportion, verbose):
+        stratify = self.y if self.label_feature[-5:] == '[y/n]' else None
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
                                                                     self.x,
                                                                     self.y,
@@ -150,14 +177,14 @@ class BaseModel(ABC):
                                                                     )
         if verbose:
             st.text(
-                f'''Train size: {len(self.x_train)} samples |
-                 Positive: {sum(self.y_train == 'Yes')};
-                 Negative: {sum(self.y_train == 'No')}'''
+                f'Train size: {len(self.x_train)} samples | '
+                f'Positive: {sum(self.y_train == "Yes")}; '
+                f'Negative: {sum(self.y_train == "No")}'
             )
             st.text(
-                f'''Test size: {len(self.x_test)} samples |
-                 Positive: {sum(self.y_test == 'Yes')};
-                 Negative: {sum(self.y_test == 'No')}'''
+                f'Test size: {len(self.x_test)} samples | '
+                f'Positive: {sum(self.y_test == "Yes")}; '
+                f'Negative: {sum(self.y_test == "No")}'
             )
 
     def concordance_index_score(self, estimator, x, y):
@@ -253,32 +280,17 @@ class BaseModel(ABC):
 
     def create_zip_download_button(self):
         file_name = self.model_name + '.zip'
-        zipObj = zipfile.ZipFile(file_name, 'w')
+        zip_obj = zipfile.ZipFile(file_name, 'w')
         log = self.log.to_csv().encode('utf-8')
-        zipObj.write(log)
+        zip_obj.write(log)
         for fig in self.fig_list:
             buf = io.BytesIO()
             fig.savefig(buf, format='png', transparent=True)
-            zipObj.write(buf.getvalue())
-        zipObj.close()
+            zip_obj.write(buf.getvalue())
+        zip_obj.close()
         st.download_button(
             label='Download all output as zip',
             data=zipfile,
             file_name=file_name
         )
 
-    @abstractmethod
-    def train(self):
-        pass
-
-    @abstractmethod
-    def evaluate(self):
-        pass
-
-    @abstractmethod
-    def visualize(self):
-        pass
-
-    @abstractmethod
-    def save_log(self):
-        pass

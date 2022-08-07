@@ -6,14 +6,13 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 import gpflow
-import tensorflow as tf
 import tensorflow_probability as tfp
 from gpflow.utilities import print_summary, tabulate_module_summary
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ExpSineSquared
-from main.models.beta_BN import BayesianNetwork
-from main.models.beta_GP import GaussianProcess
+from app.components.models.beta_BN import BayesianNetwork
+from app.components.models.beta_GP import GaussianProcess
 
 # MAIN SCRIPT --------------------------------------------------------------
 def dev(file, verbose):
