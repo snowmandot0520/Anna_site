@@ -1,3 +1,4 @@
+# pylint: skip-file
 # LOAD DEPENDENCY ----------------------------------------------------------
 import streamlit as st
 import numpy as np
@@ -11,8 +12,8 @@ from gpflow.utilities import print_summary, tabulate_module_summary
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ExpSineSquared
-from app.components.models.beta_BN import BayesianNetwork
-from app.components.models.beta_GP import GaussianProcess
+from app.components.models.beta_bn import BayesianNetwork
+from app.components.models.beta_gp import GaussianProcess
 
 # MAIN SCRIPT --------------------------------------------------------------
 def dev(file, verbose):

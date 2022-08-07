@@ -1,3 +1,4 @@
+# pylint: skip-file
 '''Recursive feature elimination for feature ranking
 Edited RFECEV source file [below] by Woochan Hwang to support concordance index
 Main adjustment in _rfe_single_fit()
