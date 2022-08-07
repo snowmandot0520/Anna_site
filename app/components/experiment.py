@@ -152,9 +152,9 @@ def experiment(file, verbose):
         st.stop()
 
     st.write('### Dataset size')
-    svm_model.process_input_options(verbose=verbose)
-    rf_model.process_input_options(verbose=False)
-    mlp_model.process_input_options(verbose=False)
+    svm_model.process_input_options()
+    rf_model.process_input_options()
+    mlp_model.process_input_options()
 
     st.write('### Train / Test split')
     test_proportion = st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3)

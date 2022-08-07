@@ -126,7 +126,7 @@ def interactive(file, verbose):
         st.stop()
 
     st.write('#### Dataset size')
-    model.process_input_options(verbose=verbose)
+    model.process_input_options()
     if selected_model == 'Cox Proportional Hazards':
         model.create_event_status(duration_days=365)
 

@@ -1,18 +1,17 @@
 """Implements Cox Proportional Hazards Model and appropriate visualizations."""
-
 # LOAD DEPENDENCY ----------------------------------------------------------
 import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 from app.components.models.base_model import BaseModel
 from lifelines import CoxPHFitter
 from lifelines.utils import concordance_index
+from matplotlib import gridspec
 
 
-# CLASS  OBJECT -----------------------------------------------------------
+# DEFINE MODEL -----------------------------------------------------------
 class CoxProportionalHazardsRegression(BaseModel):
     """Implements Cox Proportional Hazards Model and appropriate visualizations."""
     def __init__(self):

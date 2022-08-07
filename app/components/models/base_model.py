@@ -69,7 +69,7 @@ class BaseModel(ABC):
         self.input_features = selected_features
 
     def get_input_options(self):
-        self.available_input_features = list()
+        self.available_input_features = []
         for key in self.dataframe.columns:
             if self.feature_dict[key] == 'con_input' or self.feature_dict[key] == 'cat_input':
                 self.available_input_features.append(key)
