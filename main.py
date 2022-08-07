@@ -2,11 +2,11 @@
 
 Example:
     To run the streamlit app please use:
-        $ streamlit run App/main.py
+        $ streamlit run main.py
 
     To pass command line options use:
-        $ streamlit run App/main.py -- --h
-        $ streamlit run App/main.py -- --develop
+        $ streamlit run main.py -- --h
+        $ streamlit run main.py -- --develop
 
 Todo:
     * Update introduction once publication accepted.

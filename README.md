@@ -6,7 +6,7 @@
 #### Open source interactive web application for transplant graft survival prediction  
 
 ## Project Scope
-This project is focused on creating an interactive web application with tools specific for transplant graft survival prediction. The project started in 2021 with the motivation of analyzing a database of renal transplants within Guy's and St.Thomas' NHS Trust between 2009-2019. The current version is hence developed with certain assumptions that may only be specific to our database. We hope to create an application that covers most basic use cases for clinician researchers with limited software engineering experience and flexibility to allow more advanced users to extend custom models and functions with ease. Patient data is confidential and will remain excluded from this repository. 
+This project is focused on creating an interactive web application with tools specific for transplant graft survival prediction. The project started in 2021 with the motivation of analyzing a database of renal transplants within Guy's and St.Thomas' NHS Trust between 2009-2019. The current version is hence developed with certain assumptions that may only be specific to our database. We hope to create an application that covers most basic use cases for clinician researchers with limited software engineering experience and has the flexibility to allow more advanced users to extend custom models and functions with ease. Patient data is confidential and will remain excluded from this repository. 
 
 
 ### **Table of Contents**
@@ -29,7 +29,7 @@ This project is focused on creating an interactive web application with tools sp
 
 ## How to start using the app
 
-To launch the web app simply click on the streamlit app icon under the title. The web app itself is self explanatory in most cases, however you may refer to the documentation page within the app for details on the models that are currently available. We use [Streamlit Cloud](https://streamlit.io/cloud) for deployment at the time being and is therefore limited in computational availability (up to 1GB RAM). For large datasets, we recommend following the instructions [below](#deploy-locally) to host the web app locally on your local machine. Depending on the feedback and usage, we will consider migrating to other services (i.e.AWS etc.) to allow for more computational power. 
+To launch the web app simply click on the streamlit app icon under the title. The web app itself is self explanatory in most cases, however you may refer to the hints next to each input widget for more details. We use [Streamlit Cloud](https://streamlit.io/cloud) for deployment at the time being and is therefore limited in computational availability (up to 1GB RAM). For large datasets, we recommend following the instructions [below](#deploy-locally) to host the web app locally on your local machine. Depending on the feedback and usage, we will consider migrating to other services (i.e. AWS etc.) to allow for more computational power. 
 
 This app has been developed based on [Streamlit](https://streamlit.io/), a pythonic open-source app framework for Machine Learning. We would strongly recommend joining the streamlit community if you are used to handling data but less so in front-end development of web apps. 
 
@@ -82,20 +82,20 @@ streamlit run main.py -- --develop, --path_to_data='example/path_to/data.xlsx'
 
 ### Custom Models
 
-To create your own custom model and deploy it within the app, create a new model script under App/main/models/ and create a class object inheriting ```python class BaseModel```. This will allow you to access all the data preprocessing and training hyperparameter settings. Inheriting ```python class BaseModel``` forces you to implement all necessary methods to run the web app smoothly. 
+To create your own custom model and deploy it within the app, create a new model script under ```app/components/models/``` and create a class object inheriting ```python class BaseModel```. This will allow you to access all the data preprocessing and training hyperparameter settings. Inheriting ```python class BaseModel``` forces you to implement all necessary methods to run the web app smoothly. 
 
-Once you have created a script for your custom script, update App/main/interactive.py to import your model and add appropriate parameter toggles. Once you are familiar with the streamlit interface, move onto App/main/experiment.py script to automate your experiments across various training parameters. 
+Once you have created a script for your custom script, update ```app/components/interactive.py``` to import your model and add appropriate parameter toggles. Once you are familiar with the streamlit interface, move onto ```app/components/experiment.py``` script to automate your experiments across various training parameters. 
 
 ```bash
 # Structure of GSurvWeb
 main.py
 app/
-├─ main/
+├─ components/
 │  ├─ models/
 │  │  ├─ base_model.py
 │  │  ├─ support_vector_machine_model.py
 │  │  ├─ random_forest_model.py
-│  ├─ survival_analysis.py
+│  ├─ data_summary.py
 │  ├─ experiment.py
 │  ├─ interactive.py
 tests/
@@ -126,7 +126,7 @@ streamlit run main.py --server.enableCORS=false --server.enableWebsocketCompress
 
 We welcome all feedback including bug reports, pull requests, general remarks and questions. 
 
-You may also directly contact the authors via [email](mailto:woochan.hwang14@alumni.imperial.ac.uk).
+You may contact the authors via [email](mailto:woochan.hwang14@alumni.imperial.ac.uk).
 
 
 ## Contributors 
