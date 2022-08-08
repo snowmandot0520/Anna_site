@@ -262,7 +262,7 @@ class BaseModel(ABC):
     def create_log_download_button(self):
         log = self.log.to_csv().encode('utf-8')
         st.download_button(
-            label='Download output as csv',
+            label=f'{self.model_name} :Download output as csv',
             data=log,
             file_name=self.model_name + '.csv',
             mime='text/csv'

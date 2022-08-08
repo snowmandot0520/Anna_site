@@ -219,9 +219,12 @@ def experiment(file, verbose):
         st.success('Done!')
         st.session_state['train_state'] = True
 
-    st.session_state['save_state'] = st.button('Save')
+    st.write('#### Save options')
+    # create download option from browser
+    svm_model.create_log_download_button()
+    rf_model.create_log_download_button()
+    mlp_model.create_log_download_button()
 
-    if st.session_state['save_state']:
-        svm_model.export_log()
-        rf_model.export_log()
-        mlp_model.export_log()
+    train_again = st.button('Train again')
+    if train_again:
+        st.session_state['train_state'] = False

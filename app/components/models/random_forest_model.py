@@ -40,12 +40,13 @@ class RandomForest(BaseModel):
 
     def train(self, k_fold = 5):
         if self.rfe:
-            selector = RFE(
+            self.selector = RFE(
                 self.estimator,
                 n_features_to_select=self.n_features_to_select,
                 step=self.rfe_step)
-            self.best_estimator = selector.fit(self.x_train, self.y_train)
+            self.best_estimator = self.selector.fit(self.x_train, self.y_train)
             self.sort_feature_importance()
+            self.train_acc, self.train_roc_auc, self.val_acc, self.val_roc_auc = np.NaN, np.NaN, np.NaN, np.NaN
         else:
             # K-fold cross validation
             k_fold_cm = cross_validate(
@@ -91,7 +92,7 @@ class RandomForest(BaseModel):
             'label_feature': self.label_feature, 'class_weight': self.class_weight,
             'n_estimator': self.n_estimators, 'max_depth': self.max_depth,
             'criterion':self.criterion, 'train_acc':self.train_acc,
-            'train_roc_acu':self.train_roc_acu, 'val_acc':self.val_acc,
+            'train_roc_auc':self.train_roc_auc, 'val_acc':self.val_acc,
             'val_roc_auc':self.val_roc_auc, 'test_acc':self.test_acc,
             'test_f1':self.test_f1
             }
@@ -101,3 +102,5 @@ class RandomForest(BaseModel):
         if self.verbose:
             print(f'saving log: {cache}')
 
+    def save_fig(self):
+        self.fig_list = [self.confusion_matrix_plot, self.variable_importance_plot]

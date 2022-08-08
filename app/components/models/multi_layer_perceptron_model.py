@@ -1,6 +1,7 @@
 """Implements basic MLP model"""
 # LOAD DEPENDENCY ----------------------------------------------------------
 import numpy as np
+import pandas as pd
 import streamlit as st
 
 from app.components.models.base_model import BaseModel
@@ -63,7 +64,7 @@ class MultiLayerPerceptron(BaseModel):
                  'train_acc':self.train_acc, 'train_r2':self.train_r2, 'val_acc':self.val_acc, 'val_r2':self.val_r2,
                  'test_acc':self.test_acc, 'test_r2':self.test_r2,
                  'train_ci':self.train_ci, 'test_ci':self.test_ci}
-        self.log.append(cache)
+        self.log = pd.DataFrame(data=cache)
         if self.verbose:
             print(f'saving log: {cache}')
 

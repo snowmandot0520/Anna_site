@@ -85,7 +85,8 @@ class SupportVectorClassifier(BaseModel):
         self.test_f1 = f1_score(y_true=self.y_test, y_pred=self.y_test_pred, average='weighted')
 
         st.text(f'{self.model_name} test performance: '
-                f'Accuracy = {self.test_acc:.3f} | Weighted F1 = {self.test_f1:.3f}')
+                f'Accuracy = {self.test_acc:.3f} | Weighted F1 = {self.test_f1:.3f} | '
+                f'ROC_AUC = {self.test_roc_auc:.3f}')
 
     def visualize(self):
         with st.expander('Confusion matrix'):
@@ -109,7 +110,7 @@ class SupportVectorClassifier(BaseModel):
         self.log = pd.DataFrame(data=cache)
         if self.verbose:
             print(f'saving log: {cache}')
-    
+
     def save_fig(self):
         self.fig_list = [self.confusion_matrix_plot, self.variable_importance_plot]
 
