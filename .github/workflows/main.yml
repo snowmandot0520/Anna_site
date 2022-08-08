@@ -30,7 +30,6 @@ jobs:
           pip install pytest-cov
           pytest tests --cov-report=xml --cov-report=html
       - name: Python Code Quality and Lint
-        uses: actions/checkout@v1
         uses: ricardochaves/python-lint@v1.4.0
         with:
           python-root-list: "main.py app tests"
