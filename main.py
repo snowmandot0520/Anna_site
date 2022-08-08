@@ -80,10 +80,11 @@ def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', v
         None
     '''
     # Introduction
-    st.title('GSurvWeb: Transplant graft Data Summary')
-    st.info('❗Work in progress. The output is not clinically validated.')
-    st.write('This is a tool currently in development designed using Python and Streamlit \
-        to help you run basic machine learning algorithms on your dataset')
+    st.title('GSurvWeb: Graft survival prediction')
+    st.info('❗ The output is not clinically validated. Beta version v0.1.0')
+    st.write('This is an open source interactive web application for transplant graft \
+        survival prediction designed using Python and Streamlit to help you run \
+        basic machine learning algorithms on your dataset')
     st.write('Created by Woochan Hwang (Fy1, Guy\'s and St.Thomas\'). \
         Work submitted for peer review.')
 
