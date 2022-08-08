@@ -1,8 +1,4 @@
-import streamlit as st
-import pandas as pd
+"""Tests base_model modele handling of uploaded data"""
+from app.components.models import cox_ph_model
 
-#from App.main.models.CPH import CoxProportionalHazardsRegression
-
-#CPH = CoxProportionalHazardsRegression()
-
-# TODO: check input data for data code, data range logic. 
+CPH = cox_ph_model.CoxProportionalHazardsRegression()
