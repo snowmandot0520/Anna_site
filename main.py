@@ -35,11 +35,12 @@ def load_data(uploaded_file):
     else:
         return None, False
 
-@st.cache(suppress_st_warning=True)
 def example_data_download_button():
+    st.sidebar.subheader('Example Template')
+    st.sidebar.write('Use the provided template as a guide to formatting your data.')
     with open('app/data/example_data_template.xlsx', 'rb') as file:
         st.sidebar.download_button(
-            'Download Example Data',
+            'Download',
             data=file,
             file_name='example_data_template.xlsx',
             help='Click here to download example data',
