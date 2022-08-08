@@ -1,6 +1,6 @@
 # GSurvWeb
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://woochan-hwang-gsurvweb-appmain-ke01om.streamlitapp.com/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://woochan-hwang-gsurvweb-main-4cmjac.streamlitapp.com/)
 ![Tests](https://github.com/woochan-hwang/GSurvWeb/actions/workflows/main.yml/badge.svg)
 
 #### Open source interactive web application for transplant graft survival prediction  
