@@ -11,8 +11,6 @@ Example:
 Todo:
     * Update introduction once publication accepted.
 '''
-
-
 # LOAD DEPENDENCY ----------------------------------------------------------
 import argparse
 import random
@@ -36,6 +34,16 @@ def load_data(uploaded_file):
         return file, True
     else:
         return None, False
+
+@st.cache(suppress_st_warning=True)
+def example_data_download_button():
+    with open('app/data/example_data_template.xlsx', 'rb') as file:
+        st.sidebar.download_button(
+            'Download Example Data',
+            data=file,
+            file_name='example_data_template.xlsx',
+            help='Click here to download example data',
+            )
 
 def reset_session_state(verbose=False):
     '''Resets the session state when app mode changes.
@@ -91,7 +99,9 @@ def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', v
 
     file, upload_status = load_data(uploaded_file)
 
-    if upload_status:
+    if upload_status is False:
+        example_data_download_button()
+    else:
         # initialize session state
         for states in ['continue_state', 'train_state', 'save_state', 'prev_app_mode']:
             if states not in st.session_state:
