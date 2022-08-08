@@ -303,8 +303,7 @@ class RFE(SelectorMixin, MetaEstimatorMixin, BaseEstimator):
 class RFECV(RFE):
 
     def __init__(self, estimator, *, step=1, min_features_to_select=1, cv=None, scoring=None, verbose=0, n_jobs=None, importance_getter='auto'):
-        super().__init__()
-        self.estimator = estimator
+        super().__init__(estimator=estimator)
         self.step = step
         self.importance_getter = importance_getter
         self.cv = cv

@@ -29,6 +29,7 @@ class BaseModel(ABC):
         self.y = None
         self.rfe = False
         self.iterable_model_options_dict = {}
+        self.verbose = False
 
     @abstractmethod
     def train(self):
@@ -88,22 +89,22 @@ class BaseModel(ABC):
         )
         return self.censored_survival
 
-    def create_boolean_survival_status(self, cutoff_duration_days):
+    def create_binary_survival_status(self, cutoff_duration_days):
         self.calculate_survival()
         self.boolean_survival_status = self.survival.where(
             self.survival < cutoff_duration_days,
-            True
+            1
         )
         self.boolean_survival_status.where(
             self.survival >= cutoff_duration_days,
-            False, inplace=True
+            0, inplace=True
         )
         return self.boolean_survival_status
 
     def create_label_feature(self, label_feature, censoring:bool, duration:int):
         if label_feature == 'Failure within given duration [y/n]':
             self.label_feature = f'Failure within {duration} days [y/n]'
-            label = self.create_boolean_survival_status(cutoff_duration_days=duration)
+            label = self.create_binary_survival_status(cutoff_duration_days=duration)
         elif label_feature == 'Survival time [days]':
             if censoring:
                 self.label_feature = f'Survival time censored to {duration} [days]'
@@ -167,7 +168,7 @@ class BaseModel(ABC):
             self.sorted_features[index] = item
             i += 1
 
-    def train_test_split(self, test_proportion, verbose):
+    def train_test_split(self, test_proportion):
         stratify = self.y if self.label_feature[-5:] == '[y/n]' else None
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
                                                                     self.x,
@@ -175,16 +176,16 @@ class BaseModel(ABC):
                                                                     stratify=stratify,
                                                                     test_size=test_proportion
                                                                     )
-        if verbose:
+        if self.verbose:
             st.text(
                 f'Train size: {len(self.x_train)} samples | '
-                f'Positive: {sum(self.y_train == "Yes")}; '
-                f'Negative: {sum(self.y_train == "No")}'
+                f'Positive: {sum(self.y_train == 1)}; '
+                f'Negative: {sum(self.y_train == 0)}'
             )
             st.text(
                 f'Test size: {len(self.x_test)} samples | '
-                f'Positive: {sum(self.y_test == "Yes")}; '
-                f'Negative: {sum(self.y_test == "No")}'
+                f'Positive: {sum(self.y_test == 1)}; '
+                f'Negative: {sum(self.y_test == 0)}'
             )
 
     def concordance_index_score(self, estimator, x, y):
@@ -203,9 +204,10 @@ class BaseModel(ABC):
         ax2.set_title('Test data')
         st.subheader(f'Confusion matrix: {self.model_name}')
         st.pyplot(fig)
+        self.confusion_matrix_plot = fig
 
     def plot_variable_importance(self):
-        result = permutation_importance(self.best_classifier, self.x_train, self.y_train, n_repeats=10, n_jobs=-1)
+        result = permutation_importance(self.best_estimator, self.x_train, self.y_train, n_repeats=10, n_jobs=-1)
         sorted_idx = result.importances_mean.argsort()
 
         fig, ax = plt.subplots()
@@ -214,6 +216,7 @@ class BaseModel(ABC):
         fig.tight_layout()
         st.subheader(f'Variable importance: {self.model_name}')
         st.pyplot(fig)
+        self.variable_importance_plot = fig
 
     def plot_recursive_feature_elimination_cross_validation_test(self):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))

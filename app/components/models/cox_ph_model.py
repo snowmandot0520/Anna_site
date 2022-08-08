@@ -36,7 +36,7 @@ class CoxProportionalHazardsRegression(BaseModel):
     def train(self):
         self.estimator.fit(self.train_dataframe, duration_col=self.y.name, event_col='Event_observed')
 
-    def evaluate(self, verbose):
+    def evaluate(self):
         # Train
         train_prediction = self.estimator.predict_expectation(self.train_dataframe)
         self.train_concordance_index = concordance_index(
@@ -54,7 +54,7 @@ class CoxProportionalHazardsRegression(BaseModel):
         st.write(f'Train concordance index: {self.train_concordance_index:.3f}')
         st.write(f'Test concordance index: {self.test_concordance_index:.3f}')
 
-        if verbose:
+        if self.verbose:
             st.write(self.estimator.summary)
 
     def plot_coefficients(self):
@@ -97,6 +97,8 @@ class CoxProportionalHazardsRegression(BaseModel):
             'test_concordance_index': self.test_concordance_index
            }
         self.log = pd.DataFrame(data=cache)
+        if self.verbose:
+            print(f'saving log: {cache}')
 
     def save_fig(self):
         self.fig_list = []

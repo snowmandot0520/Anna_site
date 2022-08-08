@@ -90,6 +90,7 @@ def interactive(file, verbose):
             elif selected_model == 'Regression Tree':
                 model = cart_model.RegressionTree()
 
+        model.verbose = verbose
         model.get_data(file)
         available_input_options = model.get_input_options()
         selected_features = st.sidebar.multiselect(
@@ -132,8 +133,7 @@ def interactive(file, verbose):
 
     st.write('#### Train / Test split')
     model.train_test_split(
-        test_proportion=st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3),
-        verbose=verbose
+        test_proportion=st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3)
         )
 
     if st.session_state['train_state'] is False:
@@ -152,7 +152,7 @@ def interactive(file, verbose):
         st.session_state['train_state'] = True
 
     st.write('#### Model performance on test set')
-    model.evaluate(verbose=verbose)
+    model.evaluate()
     model.save_log()
 
     st.write('#### Model output visualisation')

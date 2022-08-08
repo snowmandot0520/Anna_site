@@ -31,7 +31,8 @@ def data_summary(file):
     available_input_options = model.get_input_options()
     selected_features = st.multiselect(
         'Input features (select at least one):',
-        available_input_options
+        available_input_options,
+        help='samples with missing data for selected feature are removed from analysis'
         )
     model = process_options(model, selected_features, selected_label, censoring=censor_state, duration=duration)
 

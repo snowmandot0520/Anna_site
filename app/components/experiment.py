@@ -111,6 +111,7 @@ def experiment(file, verbose):
     svm_model.get_data(file)
     rf_model.get_data(file)
     mlp_model.get_data(file)
+    svm_model.verbose, rf_model.verbose, mlp_model.verbose = verbose, verbose, verbose
 
     # return value is equal given same df for all subclass of BaseModel
     available_input_options = svm_model.get_input_options()
@@ -158,11 +159,13 @@ def experiment(file, verbose):
 
     st.write('### Train / Test split')
     test_proportion = st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3)
-    svm_model.train_test_split(test_proportion=test_proportion, verbose=verbose)
-    rf_model.train_test_split(test_proportion=test_proportion, verbose=False)
-    mlp_model.train_test_split(test_proportion=test_proportion, verbose=False)
+    svm_model.train_test_split(test_proportion=test_proportion)
+    rf_model.train_test_split(test_proportion=test_proportion)
+    mlp_model.train_test_split(test_proportion=test_proportion)
 
+    # Overwrite command line verbose option for experiment setting
     verbose = st.checkbox('Print training performance')
+    svm_model.verbose, rf_model.verbose, mlp_model.verbose = verbose, verbose, verbose
 
     if st.session_state['continue_state'] is False:
         st.session_state['continue_state'] = st.button('Continue')
@@ -177,9 +180,9 @@ def experiment(file, verbose):
                 svm_model.c_param = params[1]
 
                 svm_model.build_estimator()
-                svm_model.train(verbose=verbose)
+                svm_model.train()
 
-                svm_model.evaluate(verbose=verbose)
+                svm_model.evaluate()
                 svm_model.save_log()
 
             if selected_label == 'Failure within 1 year [y/n]':
@@ -190,9 +193,9 @@ def experiment(file, verbose):
                     rf_model.n_estimators = params[2]
 
                     rf_model.build_estimator()
-                    rf_model.train(verbose=verbose)
+                    rf_model.train()
 
-                    rf_model.evaluate(verbose=verbose)
+                    rf_model.evaluate()
                     rf_model.save_log()
 
             elif selected_label == 'Survival time [days]':
@@ -203,14 +206,14 @@ def experiment(file, verbose):
                     rf_model.max_leaf_nodes = params[2]
 
                     rf_model.build_estimator()
-                    rf_model.train(verbose=verbose)
+                    rf_model.train()
 
-                    rf_model.evaluate(verbose=verbose)
+                    rf_model.evaluate()
                     rf_model.save_log()
 
                 mlp_model.build_estimator()
-                mlp_model.train(verbose=verbose)
-                mlp_model.evaluate(verbose=verbose)
+                mlp_model.train()
+                mlp_model.evaluate()
                 mlp_model.save_log()
 
         st.success('Done!')

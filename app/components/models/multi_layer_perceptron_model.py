@@ -23,7 +23,7 @@ class MultiLayerPerceptron(BaseModel):
         self.estimator = MLPRegressor(hidden_layer_sizes=self.hidden_layer_sizes, activation=self.activation,
                                       alpha=self.alpha)
 
-    def train(self, k_fold = 5, verbose=False):
+    def train(self, k_fold = 5):
 
         # K-fold cross validation
         k_fold_cm = cross_validate(
@@ -37,25 +37,22 @@ class MultiLayerPerceptron(BaseModel):
         self.val_acc = np.mean(k_fold_cm['test_neg_root_mean_squared_error'])
         self.val_r2 = np.mean(k_fold_cm['test_r2'])
 
-        if verbose:
-            st.text(f'{k_fold}-fold train performance: RMSE = {self.train_acc:.3f} | R^2 = {self.train_r2:.3f}')
-            st.text(f'{k_fold}-fold validation performance: RMSE = {self.val_acc:.3f} | R^2 = {self.val_r2:.3f}')
+        st.text(f'{k_fold}-fold train performance: RMSE = {self.train_acc:.3f} | R^2 = {self.train_r2:.3f}')
+        st.text(f'{k_fold}-fold validation performance: RMSE = {self.val_acc:.3f} | R^2 = {self.val_r2:.3f}')
 
         # Select best parameters
         validation_performance = k_fold_cm['test_neg_root_mean_squared_error']
         self.best_estimator = k_fold_cm['estimator'][np.argmax(validation_performance)]
 
-    def evaluate(self, verbose=False):
+    def evaluate(self):
         self.y_train_pred = self.best_estimator.predict(self.x_train)
         self.y_test_pred = self.best_estimator.predict(self.x_test)
-
         self.test_acc = mean_squared_error(y_true=self.y_test, y_pred=self.y_test_pred, squared=False)
         self.test_r2 = r2_score(y_true=self.y_test, y_pred=self.y_test_pred)
-        if verbose:
-            st.text(f'{self.model_name} test performance: RMSE = {self.test_acc:.3f} | R^2 = {self.test_r2:.3f}')
-
         self.train_ci = concordance_index(event_times=self.y_train, predicted_scores=self.y_train_pred)
         self.test_ci = concordance_index(event_times=self.y_test, predicted_scores=self.y_test_pred)
+
+        st.text(f'{self.model_name} test performance: RMSE = {self.test_acc:.3f} | R^2 = {self.test_r2:.3f}')
 
     def visualize(self):
         with st.beta_expander('Confusion matrix'):
@@ -67,3 +64,6 @@ class MultiLayerPerceptron(BaseModel):
                  'test_acc':self.test_acc, 'test_r2':self.test_r2,
                  'train_ci':self.train_ci, 'test_ci':self.test_ci}
         self.log.append(cache)
+        if self.verbose:
+            print(f'saving log: {cache}')
+

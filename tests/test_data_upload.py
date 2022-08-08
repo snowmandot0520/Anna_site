@@ -2,4 +2,10 @@
 from app.components.models import cox_ph_model
 
 def test_load_model():
-    CPH = cox_ph_model.CoxProportionalHazardsRegression()
+    model = cox_ph_model.CoxProportionalHazardsRegression()
+
+def test_load_data():
+    pass
+
+def test_data_format():
+    pass
