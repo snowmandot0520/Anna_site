@@ -1,7 +1,6 @@
 """Implements Cox Proportional Hazards Model and appropriate visualizations."""
 # LOAD DEPENDENCY ----------------------------------------------------------
 import streamlit as st
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -18,12 +17,6 @@ class CoxProportionalHazardsRegression(BaseModel):
         super().__init__()
         self.model_name = 'Cox Proportional Hazards'
         self.iterable_model_options_dict = {}
-
-    def create_event_status(self, duration_days: int):
-        self.x['Event_observed'] = np.zeros(self.y.size)
-        for idx, duration in self.y.iteritems():
-            if duration < duration_days:
-                self.x.at[idx, 'Event_observed'] = 1
 
     def combine_outcome_data(self):
         # combine outcome into same dataframe for CoxPH

@@ -126,10 +126,11 @@ def interactive(file, verbose):
             to recursive feature elimination')
         st.stop()
 
-    st.write('#### Dataset size')
     model.process_input_options()
-    if selected_model == 'Cox Proportional Hazards':
-        model.create_event_status(duration_days=365)
+
+    st.write('### Univariate survival curve')
+    model.create_event_status(duration_days=365)
+    model.plot_univariate_survival_curve()
 
     st.write('#### Train / Test split')
     model.train_test_split(

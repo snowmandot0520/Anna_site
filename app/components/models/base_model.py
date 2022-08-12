@@ -12,6 +12,7 @@ import streamlit as st
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
+from lifelines import KaplanMeierFitter, NelsonAalenFitter
 from lifelines.utils import concordance_index
 from abc import ABC, abstractmethod
 
@@ -120,6 +121,13 @@ class BaseModel(ABC):
 
         self.label = pd.Series(data=label, name=self.label_feature)
         self.dataframe = pd.concat([self.dataframe, self.label], axis=1)
+
+    def create_event_status(self, duration_days: int):
+        # Required for Cox proportional hazards model and plot_univariate_survival_curve()
+        self.x['Event_observed'] = np.zeros(self.y.size)
+        for idx, duration in self.y.iteritems():
+            if duration < duration_days:
+                self.x.at[idx, 'Event_observed'] = 1
 
     def process_input_options(self):
         # Only focusing on deceased donor transplants for the purpose of this prototype
@@ -231,6 +239,33 @@ class BaseModel(ABC):
         ax2.set_xlabel('Number of features')
         st.pyplot(fig)
         self.fig_rfecv = fig
+
+    def plot_univariate_survival_curve(self):
+        fig_uni, (ax1_uni, ax2_uni) = plt.subplots(1, 2, figsize=(12, 4))
+
+        kmf = KaplanMeierFitter()
+        kmf.fit(
+            durations=np.asarray(self.y),
+            event_observed=np.asarray(self.x['Event_observed']),
+            label='Kaplan Meier Estimate'
+            )
+        kmf.plot(ax=ax1_uni)
+        ax1_uni.set_title('Kaplan Meier survival estimate')
+        ax1_uni.set_xlabel('Time [days]')
+        ax1_uni.set_ylabel('Survival probability')
+
+        naf = NelsonAalenFitter()
+        naf.fit(
+            durations=np.asarray(self.y),
+            event_observed=np.asarray(self.x['Event_observed']),
+            label='Nelson Aalen Estimate'
+            )
+        naf.plot_cumulative_hazard(ax=ax2_uni)
+        ax2_uni.set_title('Nelson Aalen hazard estimate')
+        ax2_uni.set_xlabel('Time [days]')
+        ax2_uni.set_ylabel('Cumulative hazard')
+
+        st.pyplot(fig_uni)
 
     def export_log_to_local(self):
         st.text(f'Exporting log for {self.model_name.lower()}')
