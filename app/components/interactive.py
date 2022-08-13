@@ -162,7 +162,7 @@ def interactive(file, verbose):
             'Plot partial effects on outcome for following:',
             model.x.columns.drop('Event_observed')
             )
-        model.visualize(selected_covariates)
+        model.visualize(selected_covariates)  # pylint: disable=method overrided in cox_ph model
     else:
         model.visualize()
     model.save_fig()

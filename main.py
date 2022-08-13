@@ -10,6 +10,7 @@ Example:
 
 Todo:
     * Update introduction once publication accepted.
+    * Update input option processing to include living donors - no argument to not include.
 '''
 # LOAD DEPENDENCY ----------------------------------------------------------
 import argparse

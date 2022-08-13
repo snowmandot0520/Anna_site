@@ -129,10 +129,33 @@ class BaseModel(ABC):
             if duration < duration_days:
                 self.x.at[idx, 'Event_observed'] = 1
 
+    def create_dataframe_subset(self, subset_feature_dict):
+        '''
+        Summary:
+            Creates a subset of the provided dataframe given the following dictionary.
+            Currently no interactive widget provided to access this function from the web app.
+
+        Args:
+            subset_feature_dict = {feature_name: [selected_keys]}
+
+        Example:
+            subset_feature_dict = {'Transplant type': ['DBD kidney transplant', 'DCD kidney transplant']}
+            self.create_dataframe_subset(subset_dict)
+        '''
+        modified_dataframe = self.dataframe
+        for feature_name, selected_key_list in subset_feature_dict.items():
+            print(feature_name, selected_key_list)
+            modified_dataframe = modified_dataframe[modified_dataframe[feature_name].isin(selected_key_list)].copy()
+        self.dataframe = modified_dataframe
+
     def process_input_options(self):
-        # Only focusing on deceased donor transplants for the purpose of this prototype
-        transplant_subset = ['DBD kidney transplant', 'DCD kidney transplant']
-        self.dataframe = self.dataframe[self.dataframe['Transplant type'].isin(transplant_subset)].copy()
+        '''
+        Summary:
+            Remove NaN, check for empty uploads, create one-hot-encoding for categorical input
+
+        Returns:
+            self.x, self.y
+        '''
         self.dataframe.replace('n/a', np.NaN, inplace=True)
         self.dataframe.dropna(axis=0, how='any', subset=self.input_features + [self.label_feature], inplace=True)
 
@@ -151,6 +174,7 @@ class BaseModel(ABC):
             columns=self.input_features_cat
             )
         self.y = self.dataframe[self.label_feature]
+        return self.x, self.y
 
     def get_iterable_model_options(self, *args, **kwargs):
         iterables = []
