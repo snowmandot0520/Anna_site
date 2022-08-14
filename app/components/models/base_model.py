@@ -128,6 +128,9 @@ class BaseModel(ABC):
         for idx, duration in self.y.iteritems():
             if duration < duration_days:
                 self.x.at[idx, 'Event_observed'] = 1
+    
+    def remove_event_status(self):
+        self.x.drop(columns=['Event_observed'])
 
     def create_dataframe_subset(self, subset_feature_dict):
         '''

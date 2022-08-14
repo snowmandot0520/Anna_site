@@ -9,7 +9,7 @@ from app.components.models import support_vector_machine_model
 from app.components.models import random_forest_model
 from app.components.models import cart_model
 from app.components.models import cox_ph_model
-
+from app.components.models import multi_layer_perceptron_model
 
 # MAIN SCRIPT --------------------------------------------------------------
 @st.cache(allow_output_mutation=True)
@@ -44,8 +44,7 @@ def interactive(file, verbose):
         if selected_label == 'Failure within given duration [y/n]':
             selected_model = st.selectbox(
                 'Classification model:',
-                ['Support Vector Machine',
-                'Random Forest']
+                ['Support Vector Machine', 'Random Forest', 'Multi-layer Perceptron']
                 )
             if selected_model == 'Support Vector Machine':
                 model = support_vector_machine_model.SupportVectorClassifier()
@@ -71,11 +70,25 @@ def interactive(file, verbose):
                 model.max_depth = st.number_input('Depth of trees?', min_value=1, max_value=10)
                 model.criterion = st.selectbox('Criterion?', ['gini', 'entropy'])
                 model.class_weight = 'balanced_subsample'
+            elif selected_model == 'Multi-layer Perceptron':
+                model = multi_layer_perceptron_model.MultiLayerPerceptronClassifier()
+                hidden_layer_dimensions=[]
+                number_of_layers = st.number_input(
+                    'Hidden layer depth?',
+                    min_value=1, max_value=3, value=1,
+                    help='Maximum of 3 hidden layers given computational resource limit')
+                for hidden_layer in range(0, number_of_layers):
+                    layer_size = st.number_input(f'size of layer {hidden_layer}?', min_value=1, max_value=100, value=10)
+                    hidden_layer_dimensions.append(layer_size)
+                model.hidden_layer_sizes = tuple(hidden_layer_dimensions)
+                model.activation = st.selectbox('Non linear activation?', options=model.activation_list)
+                model.alpha = st.select_slider('Alpha?', options=model.alpha_list, value=0.001)
+
         # Regression task
         elif selected_label == 'Survival time [days]':
             selected_model = st.selectbox(
                 'Regression model:',
-                ['Cox Proportional Hazards', 'Support Vector Machine', 'Regression Tree']
+                ['Cox Proportional Hazards', 'Support Vector Machine', 'Regression Tree', 'Multi-layer Perceptron']
                 )
             if selected_model == 'Cox Proportional Hazards':
                 model = cox_ph_model.CoxProportionalHazardsRegression()
@@ -89,6 +102,19 @@ def interactive(file, verbose):
                     )
             elif selected_model == 'Regression Tree':
                 model = cart_model.RegressionTree()
+            elif selected_model == 'Multi-layer Perceptron':
+                model = multi_layer_perceptron_model.MultiLayerPerceptronRegressor()
+                hidden_layer_dimensions=[]
+                number_of_layers = st.number_input(
+                    'Hidden layer depth?',
+                    min_value=1, max_value=3, value=1,
+                    help='Maximum of 3 hidden layers given computational resource limit')
+                for hidden_layer in range(0, number_of_layers):
+                    layer_size = st.number_input(f'size of layer {hidden_layer}?', min_value=1, max_value=100, value=10)
+                    hidden_layer_dimensions.append(layer_size)
+                model.hidden_layer_sizes = tuple(hidden_layer_dimensions)
+                model.activation = st.selectbox('Non linear activation?', options=model.activation_list)
+                model.alpha = st.select_slider('Alpha?', options=model.alpha_list, value=0.001)
 
         model.verbose = verbose
         model.get_data(file)
@@ -97,7 +123,7 @@ def interactive(file, verbose):
             'Input features (select at least one):',
             available_input_options
             )
-        if selected_model == 'Cox Proportional Hazards':
+        if selected_model in ['Cox Proportional Hazards', 'Multi-layer Perceptron']:
             feature_elimination = False
         else:
             feature_elimination = st.checkbox(
@@ -114,6 +140,11 @@ def interactive(file, verbose):
             rfe=feature_elimination
             )
 
+    subset_dict = {
+        'Transplant type': ['DBD kidney transplant', 'DCD kidney transplant', 'LRD kidney transplant', 'LUD kidney transplant']
+        }
+    model.create_dataframe_subset(subset_dict)
+
     if show_data:
         st.subheader('Show raw data')
         st.dataframe(model.dataframe)
@@ -128,9 +159,11 @@ def interactive(file, verbose):
 
     model.process_input_options()
 
-    st.write('### Univariate survival curve')
-    model.create_event_status(duration_days=365)
-    model.plot_univariate_survival_curve()
+    if selected_label == 'Survival time [days]':
+        st.write('### Univariate survival curve')
+        model.create_event_status(duration_days=365)
+        model.plot_univariate_survival_curve()
+        model.remove_event_status()
 
     st.write('#### Train / Test split')
     model.train_test_split(
