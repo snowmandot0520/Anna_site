@@ -134,7 +134,7 @@ You may contact the authors via [email](mailto:woochan.hwang14@alumni.imperial.a
 The work was started by a group of transplant surgeons at [Guy's and St.Thomas' NHS Foundation Trust](https://www.guysandstthomas.nhs.uk/) who were interested in learning about machine learning in clinical data. Dr Woochan Hwang joined as a junior doctor in the renal department. 
 
 **Authors:**
-Dr Woochan Hwang, Mr Usman Harron, Mr Ravindhran Bharadhwaj, Mr Toroth Ameen, Mr Pankaj Chandak, Miss Zakri Rhana 
+Dr Woochan Hwang, Mr Usman Harron, Mr Ravindhran Bharadhwaj, Mr Torath Ameen, Mr Pankaj Chandak, Miss Zakri Rhana 
 
 
 ## Citing 
