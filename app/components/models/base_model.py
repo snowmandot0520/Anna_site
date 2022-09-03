@@ -31,6 +31,8 @@ class BaseModel(ABC):
         self.rfe = False
         self.iterable_model_options_dict = {}
         self.verbose = False
+        self.boolean_survival_status = None
+        self.log = []
 
     @abstractmethod
     def train(self):
@@ -128,7 +130,7 @@ class BaseModel(ABC):
         for idx, duration in self.y.iteritems():
             if duration < duration_days:
                 self.x.at[idx, 'Event_observed'] = 1
-    
+
     def remove_event_status(self):
         self.x.drop(columns=['Event_observed'])
 
@@ -179,19 +181,32 @@ class BaseModel(ABC):
         self.y = self.dataframe[self.label_feature]
         return self.x, self.y
 
-    def get_iterable_model_options(self, *args, **kwargs):
-        iterables = []
-        for option_list in args:
-            # used for unordered multiselect inputs; i.e. criterion
-            iterables.append(option_list)
+    def get_iterable_model_options(self, **kwargs):
+        '''
+        Summary: create iterable list of hyperparameters to train over
+
+        Note:
+            requires all kwarg inputs to be declared in the __init__ function of each model
+            unordered: unordered multiselect inputs; i.e. criterion
+            ordered: ordered selections to include as a range; i.e. c_params
+
+        Returns:
+            Dict -> {option_name: iterable_selected_list}
+        '''
+        iterables = {}
         for option, value in kwargs.items():
-            select_list = np.array(self.iterable_model_options_dict[option + '_list'])
-            min_val, max_val = value
-            min_index = np.where(select_list==min_val)[0][0]
-            max_index = np.where(select_list==max_val)[0][0]
-            # select inclusively for ordered selections; i.e. c_params
-            selected_list = list(select_list[min_index:max_index+1])
-            iterables.append(selected_list)
+            # check for declaration
+            assert option in self.option_widget_type_dict, 'parameter type undefined in model class'
+
+            if self.option_widget_type_dict[option] == 'unordered':
+                iterables[option] = value
+            elif self.option_widget_type_dict[option] == 'ordered':
+                select_list = np.array(self.iterable_model_options_dict[option + '_list'])
+                min_val, max_val = value
+                min_index = np.where(select_list==min_val)[0][0]
+                max_index = np.where(select_list==max_val)[0][0]
+                selected_list = list(select_list[min_index:max_index+1])
+                iterables[option] = selected_list
         return iterables
 
     def sort_feature_importance(self):
@@ -211,7 +226,10 @@ class BaseModel(ABC):
                                                                     stratify=stratify,
                                                                     test_size=test_proportion
                                                                     )
-        if self.verbose:
+        if self.boolean_survival_status is None:
+            st.text(f'Train size: {len(self.x_train)} samples')
+            st.text(f'Test size: {len(self.x_test)} samples')
+        else:
             st.text(
                 f'Train size: {len(self.x_train)} samples | '
                 f'Positive: {sum(self.y_train == 1)}; '
@@ -322,7 +340,7 @@ class BaseModel(ABC):
             st.text(f'Saved as {file_path}')
 
     def create_log_download_button(self):
-        log = self.log.to_csv().encode('utf-8')
+        log = pd.DataFrame(data=self.log).to_csv().encode('utf-8')
         st.download_button(
             label=f'{self.model_name} :Download output as csv',
             data=log,
@@ -358,4 +376,3 @@ class BaseModel(ABC):
             data=zipfile,
             file_name=file_name
         )
-

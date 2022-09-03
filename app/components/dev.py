@@ -22,10 +22,10 @@ def dev(file, verbose):
             help='This input will be used to create boolean labels for classification models')
         censor_state = False
     elif selected_label == 'Survival time [days]':
-        censor_state = st.checkbox('Left censoring', value=True)
+        censor_state = st.checkbox('Right censoring', value=True)
         if censor_state is True:
             duration = st.number_input('Censor duration [days]', min_value=1, max_value=365, format='%i', value=365,
-                help='This input will be used for left censoring of labels for regression models')
+                help='This input will be used for right censoring of labels for regression models')
         else:
             duration = 1000
 

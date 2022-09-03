@@ -6,6 +6,7 @@ import pandas_profiling  # pylint: disable=required import for profile module
 
 from streamlit_pandas_profiling import st_profile_report
 from app.components.models import cart_model
+from app.components.utils import widget_functions
 
 # MAIN SCRIPT --------------------------------------------------------------
 @st.cache(suppress_st_warning=True)
@@ -16,18 +17,12 @@ def data_summary(file):
         '[streamlit pandas profiling](https://github.com/okld/streamlit-pandas-profiling) [MIT License]'
     )
 
-    selected_label = 'Survival time [days]'
-    censor_state = st.checkbox('Select to activate left censoring')
-    if censor_state is True:
-        duration = st.number_input('Censor duration [days]', min_value=1, max_value=365, format='%i', value=365,
-            help='This input will be used for left censoring of survival duration')
-    else:
-        duration = 1000
+    label_info = widget_functions.create_select_label_widget()
 
     model = cart_model.RegressionTree()
     model.get_data(file)
     model.get_input_options()
-    model.create_label_feature(label_feature=selected_label, censoring=censor_state, duration=duration)
+    model.create_label_feature(label_feature=label_info['selected_label'], censoring=label_info['censor_state'], duration=label_info['duration'])
     available_variable_list = model.available_input_features + [model.label_feature]
     selected_variables = st.multiselect(
         'Features to analyze (select at least one):',
@@ -38,6 +33,20 @@ def data_summary(file):
     if len(selected_variables) == 0:
         st.warning('❗Please select at least one input feature to run analysis.')
         st.stop()
+
+    subset_dict = {
+        'Transplant type': ['DBD kidney transplant', 'DCD kidney transplant', 'LRD kidney transplant', 'LUD kidney transplant']
+        }
+
+    if label_info['selected_label'] == 'Failure within given duration [y/n]':
+        survival_state = st.selectbox('Create subset based on graft function', ['working', 'failed', 'both'])
+        # No need to create subset if 'both' selected'
+        if survival_state == 'working':
+            subset_dict[model.label_feature]=[1]
+        elif survival_state == 'failed':
+            subset_dict[model.label_feature]=[0]
+
+    model.create_dataframe_subset(subset_dict)
 
     df_to_analyze = model.dataframe[selected_variables]
 

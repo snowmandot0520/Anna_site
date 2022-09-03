@@ -30,6 +30,11 @@ class RandomForest(BaseModel):
             'n_estimators':self.n_estimators, 'n_estimators_list':self.n_estimators_list,
             'max_depth':self.max_depth, 'max_depth_list':self.max_depth_list
             }
+        self.option_widget_type_dict = {
+            'criterion':'unordered',
+            'n_estimators':'ordered',
+            'max_depth':'ordered'
+            }
 
     def build_estimator(self):
         self.estimator = RandomForestClassifier(
@@ -59,10 +64,11 @@ class RandomForest(BaseModel):
             self.val_acc = np.mean(k_fold_cm['test_accuracy'])
             self.val_roc_auc = np.mean(k_fold_cm['test_roc_auc'])
 
-            st.text(f'{k_fold}-fold train performance: Accuracy = {self.train_acc:.3f} | '
-                    f'ROC AUC = {self.train_roc_auc:.3f}')
-            st.text(f'{k_fold}-fold validation performance: Accuracy = {self.val_acc:.3f} | '
-                    f'ROC AUC = {self.val_roc_auc:.3f}')
+            if self.verbose:
+                st.text(f'{k_fold}-fold train performance: Accuracy = {self.train_acc:.3f} | '
+                        f'ROC AUC = {self.train_roc_auc:.3f}')
+                st.text(f'{k_fold}-fold validation performance: Accuracy = {self.val_acc:.3f} | '
+                        f'ROC AUC = {self.val_roc_auc:.3f}')
 
             # Select best parameters
             validation_performance = k_fold_cm['test_roc_auc']
@@ -74,8 +80,9 @@ class RandomForest(BaseModel):
         self.test_acc = accuracy_score(y_true=self.y_test, y_pred=self.y_test_pred)
         self.test_f1 = f1_score(y_true=self.y_test, y_pred=self.y_test_pred, average='weighted')
 
-        st.text(f'{self.model_name} test performance: Accuracy = {self.test_acc:.3f}'
-                f' | Weighted F1 = {self.test_f1:.3f}')
+        if self.verbose:
+            st.text(f'{self.model_name} test performance: Accuracy = {self.test_acc:.3f}'
+                    f' | Weighted F1 = {self.test_f1:.3f}')
 
     def visualize(self):
         with st.expander('Confusion matrix'):
@@ -88,7 +95,7 @@ class RandomForest(BaseModel):
 
     def save_log(self):
         cache = {
-            'model': self.model_name, 'input_features': self.input_features,
+            'model': self.model_name, 'input_features': str(self.input_features),
             'label_feature': self.label_feature, 'class_weight': self.class_weight,
             'n_estimator': self.n_estimators, 'max_depth': self.max_depth,
             'criterion':self.criterion, 'train_acc':self.train_acc,
@@ -98,9 +105,9 @@ class RandomForest(BaseModel):
             }
         if self.rfe:
             cache.update({'features_sorted_by_importance':self.sorted_features})
-        self.log = pd.DataFrame(data=cache)
         if self.verbose:
             print(f'saving log: {cache}')
+        self.log.append(cache)
 
     def save_fig(self):
         self.fig_list = [self.confusion_matrix_plot, self.variable_importance_plot]

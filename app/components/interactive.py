@@ -10,38 +10,18 @@ from app.components.models import random_forest_model
 from app.components.models import cart_model
 from app.components.models import cox_ph_model
 from app.components.models import multi_layer_perceptron_model
+from app.components.utils import widget_functions
 
 # MAIN SCRIPT --------------------------------------------------------------
-@st.cache(allow_output_mutation=True)
-def process_options(model, selected_features, selected_label, censoring, duration, rfe):
-    model.get_input_features(selected_features)
-    model.create_label_feature(label_feature=selected_label, censoring=censoring, duration=duration)
-    model.rfe = rfe
-    return model
-
 def interactive(file, verbose):
     with st.sidebar:
         st.write('\n')
         show_data = st.checkbox('Show raw data')
 
-        selected_label = st.selectbox(
-            'Prediction target:',
-            ['Survival time [days]', 'Failure within given duration [y/n]']
-            )
-        if selected_label == 'Failure within given duration [y/n]':
-            duration = st.number_input('Failed within [days]', min_value=1, max_value=365, format='%i', value=365,
-                help='This input will be used to create boolean labels for classification models')
-            censor_state = False
-        elif selected_label == 'Survival time [days]':
-            censor_state = st.checkbox('Left censoring', value=True)
-            if censor_state is True:
-                duration = st.number_input('Censor duration [days]', min_value=1, max_value=365, format='%i', value=365,
-                    help='This input will be used for left censoring of labels for regression models')
-            else:
-                duration = 1000
+        label_info = widget_functions.create_select_label_widget()
 
         # Classification task
-        if selected_label == 'Failure within given duration [y/n]':
+        if label_info['selected_label'] == 'Failure within given duration [y/n]':
             selected_model = st.selectbox(
                 'Classification model:',
                 ['Support Vector Machine', 'Random Forest', 'Multi-layer Perceptron']
@@ -85,7 +65,7 @@ def interactive(file, verbose):
                 model.alpha = st.select_slider('Alpha?', options=model.alpha_list, value=0.001)
 
         # Regression task
-        elif selected_label == 'Survival time [days]':
+        elif label_info['selected_label'] == 'Survival time [days]':
             selected_model = st.selectbox(
                 'Regression model:',
                 ['Cox Proportional Hazards', 'Support Vector Machine', 'Regression Tree', 'Multi-layer Perceptron']
@@ -131,12 +111,12 @@ def interactive(file, verbose):
                 value=True,
                 help='Must select at least 2 features'
                 )
-        model = process_options(
-            model,
-            selected_features,
-            selected_label=selected_label,
-            censoring=censor_state,
-            duration=duration,
+        model = widget_functions.process_options(
+            model=model,
+            selected_features=selected_features,
+            selected_label=label_info['selected_label'],
+            censoring=label_info['censor_state'],
+            duration=label_info['duration'],
             rfe=feature_elimination
             )
 
@@ -159,7 +139,7 @@ def interactive(file, verbose):
 
     model.process_input_options()
 
-    if selected_label == 'Survival time [days]':
+    if label_info['selected_label'] == 'Survival time [days]':
         st.write('### Univariate survival curve')
         model.create_event_status(duration_days=365)
         model.plot_univariate_survival_curve()
