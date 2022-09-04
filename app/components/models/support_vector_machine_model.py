@@ -3,7 +3,6 @@
 # LOAD DEPENDENCY ----------------------------------------------------------
 import numpy as np
 import streamlit as st
-import pandas as pd
 
 from app.components.models.base_model import BaseModel
 from app.components.utils.rfecv import RFECV

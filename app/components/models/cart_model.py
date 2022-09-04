@@ -3,7 +3,6 @@ which explains how an outcome variable's values can be predicted based on other 
 with appropriate visualizations"""
 # LOAD DEPENDENCY ----------------------------------------------------------
 import numpy as np
-import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
@@ -66,7 +65,7 @@ class RegressionTree(BaseModel):
             validation_performance = k_fold_cm['test_neg_root_mean_squared_error']
             self.best_estimator = k_fold_cm['estimator'][np.argmax(validation_performance)]
 
-    def evaluate(self, verbose=False):
+    def evaluate(self):
         self.y_train_pred = self.best_estimator.predict(self.x_train)
         self.y_test_pred = self.best_estimator.predict(self.x_test)
 

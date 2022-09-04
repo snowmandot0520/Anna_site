@@ -1,7 +1,6 @@
 """Implements basic MLP model"""
 # LOAD DEPENDENCY ----------------------------------------------------------
 import numpy as np
-import pandas as pd
 import streamlit as st
 
 from app.components.models.base_model import BaseModel
@@ -83,7 +82,6 @@ class MultiLayerPerceptronClassifier(BaseModel):
                 self.plot_variable_importance()
 
     def save_log(self):
-        st.write('tag')
         cache = {'model': self.model_name, 'input_features': str(self.input_features),
             'label_feature': self.label_feature, 'hidden_layer_sizes': str(self.hidden_layer_sizes),
             'activation': self.activation, 'alpha': self.alpha,

@@ -2,12 +2,11 @@
 Refer to CART for random forest based regression."""
 # LOAD DEPENDENCY ----------------------------------------------------------
 import numpy as np
-import pandas as pd
 import streamlit as st
 
 from app.components.models.base_model import BaseModel
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, roc_auc_score
 from sklearn.model_selection import cross_validate
 from sklearn.feature_selection import RFE
 
@@ -19,7 +18,7 @@ class RandomForest(BaseModel):
         super().__init__()
         self.model_name = 'Random Forest Classifier'
         self.n_estimators = 100
-        self.n_estimators_list = [1, 10, 50, 100, 200, 500, 1000, 10000]
+        self.n_estimators_list = [1, 3, 5, 10, 30, 50, 100, 200, 500, 1000]
         self.max_depth = 4
         self.max_depth_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.criterion = 'gini'
@@ -76,13 +75,21 @@ class RandomForest(BaseModel):
 
     def evaluate(self):
         self.y_train_pred = self.best_estimator.predict(self.x_train)
+        self.y_train_pred_proba = self.best_estimator.predict_proba(self.x_train)[:,1]
+        self.train_mse = mean_squared_error(y_true=self.y_train, y_pred=self.y_train_pred, squared=False)
+        self.train_roc_auc = roc_auc_score(y_true=self.y_train, y_score=self.y_train_pred_proba)
+
         self.y_test_pred = self.best_estimator.predict(self.x_test)
+        self.y_test_pred_proba = self.best_estimator.predict_proba(self.x_test)[:,1]
+        self.test_mse = mean_squared_error(y_true=self.y_test, y_pred=self.y_test_pred, squared=False)
+        self.test_roc_auc = roc_auc_score(y_true=self.y_test, y_score=self.y_test_pred_proba)
         self.test_acc = accuracy_score(y_true=self.y_test, y_pred=self.y_test_pred)
         self.test_f1 = f1_score(y_true=self.y_test, y_pred=self.y_test_pred, average='weighted')
 
         if self.verbose:
-            st.text(f'{self.model_name} test performance: Accuracy = {self.test_acc:.3f}'
-                    f' | Weighted F1 = {self.test_f1:.3f}')
+            st.text(f'{self.model_name} test performance: '
+                    f'Accuracy = {self.test_acc:.3f} | Weighted F1 = {self.test_f1:.3f} | '
+                    f'ROC_AUC = {self.test_roc_auc:.3f}')
 
     def visualize(self):
         with st.expander('Confusion matrix'):
@@ -98,11 +105,11 @@ class RandomForest(BaseModel):
             'model': self.model_name, 'input_features': str(self.input_features),
             'label_feature': self.label_feature, 'class_weight': self.class_weight,
             'n_estimator': self.n_estimators, 'max_depth': self.max_depth,
-            'criterion':self.criterion, 'train_acc':self.train_acc,
-            'train_roc_auc':self.train_roc_auc, 'val_acc':self.val_acc,
-            'val_roc_auc':self.val_roc_auc, 'test_acc':self.test_acc,
-            'test_f1':self.test_f1
-            }
+            'criterion':self.criterion,
+            'train_mse':self.train_mse, 'train_roc_auc':self.train_roc_auc,
+            'val_acc':self.val_acc, 'val_roc_auc':self.val_roc_auc,
+            'test_mse':self.test_acc, 'test_roc_auc':self.test_roc_auc,
+            'test_f1':self.test_f1, 'test_acc':self.test_acc}
         if self.rfe:
             cache.update({'features_sorted_by_importance':self.sorted_features})
         if self.verbose:

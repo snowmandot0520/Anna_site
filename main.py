@@ -10,7 +10,6 @@ Example:
 
 Todo:
     * Update introduction once publication accepted.
-    * Update input option processing to include living donors - no argument to not include.
 '''
 # LOAD DEPENDENCY ----------------------------------------------------------
 import argparse
@@ -82,7 +81,7 @@ def main(dev_mode=False, path_to_local_data='data/example_data_template.xlsx', v
     '''
     # Introduction
     st.title('GSurvWeb: Graft survival prediction')
-    st.info('❗ The output is not clinically validated. Beta version v0.1.0')
+    st.info('❗ The output is not clinically validated. Beta version v0.1.x')
     st.write('This is an open source interactive web application for transplant graft \
         survival prediction designed using Python and Streamlit to help you run \
         basic machine learning algorithms on your dataset')
