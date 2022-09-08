@@ -43,6 +43,10 @@ def experiment(file, verbose):
         help='Must select at least 2 features'
         )
 
+    if len(selected_features) == 0:
+        st.warning('❗Please select at least one input feature to run analysis.')
+        st.stop()
+
     for model_name, model_instance in model_dict.items():
         model_dict[model_name] = widget_functions.process_options(
             model=model_dict[model_name],
@@ -52,10 +56,8 @@ def experiment(file, verbose):
             duration=label_info['duration'],
             rfe=feature_elimination
             )
-
-    if len(selected_features) == 0:
-        st.warning('❗Please select at least one input feature to run analysis.')
-        st.stop()
+        subset_dict = model_instance.get_subset_options_dict()
+        model_instance.create_dataframe_subset(subset_dict)
 
     st.write('### Dataset size')
     for model_name, model_instance in model_dict.items():

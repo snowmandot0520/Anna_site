@@ -110,19 +110,17 @@ def interactive(file, verbose):
                 'Recursive feature elimination?',
                 value=True,
                 help='Must select at least 2 features'
-                )
-        model = widget_functions.process_options(
-            model=model,
-            selected_features=selected_features,
-            selected_label=label_info['selected_label'],
-            censoring=label_info['censor_state'],
-            duration=label_info['duration'],
-            rfe=feature_elimination
             )
 
-    subset_dict = {
-        'Transplant type': ['DBD kidney transplant', 'DCD kidney transplant', 'LRD kidney transplant', 'LUD kidney transplant']
-        }
+    model = widget_functions.process_options(
+        model=model,
+        selected_features=selected_features,
+        selected_label=label_info['selected_label'],
+        censoring=label_info['censor_state'],
+        duration=label_info['duration'],
+        rfe=feature_elimination
+        )
+    subset_dict = model.get_subset_options_dict()
     model.create_dataframe_subset(subset_dict)
 
     if show_data:

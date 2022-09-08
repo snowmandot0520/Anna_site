@@ -64,10 +64,28 @@ class BaseModel(ABC):
             interval = dataframe_covariate_range['Interval'][dataframe_covariate_range['Variable'] == item].values[0]
             self.covariate_range_dict[item] = [*range(min_val, max_val, interval)]
 
+    def create_dataframe_subset_dict(self, dataframe_subset_analysis):
+        subset_dict = {}
+        for row in dataframe_subset_analysis.itertuples():
+            var_name = row.Variable
+            var_type = row.Type
+            if var_type == 'con_input':
+                subset_dict[var_name] = {'type':var_type, 'value':[row.Min, row.Max]}
+            elif var_type == 'cat_input':
+                categories_list = row.Categories.split(',')
+                subset_dict[var_name] = {'type':var_type, 'value':categories_list}
+        self.selected_subset_dict = subset_dict
+
+    def get_subset_options_dict(self):
+        if self.verbose:
+            print(f'Running {self.model_name} on subset of following features {self.selected_subset_dict}')
+        return self.selected_subset_dict
+
     def get_data(self, file):
         self.get_dataframe(file['Data'])
         self.get_dataframe_code(file['Data Code'])
         self.get_dataframe_covariate_range(file['Data Range'])
+        self.create_dataframe_subset_dict(file['Subset Analysis'])
 
     def get_input_features(self, selected_features):
         self.input_features = selected_features
@@ -148,9 +166,13 @@ class BaseModel(ABC):
             self.create_dataframe_subset(subset_dict)
         '''
         modified_dataframe = self.dataframe
-        for feature_name, selected_key_list in subset_feature_dict.items():
-            print(feature_name, selected_key_list)
-            modified_dataframe = modified_dataframe[modified_dataframe[feature_name].isin(selected_key_list)].copy()
+        for feature_name, nested_dict in subset_feature_dict.items():
+            if nested_dict['type'] == 'cat_input':
+                selected_key_list = nested_dict['value']
+                modified_dataframe = modified_dataframe[modified_dataframe[feature_name].isin(selected_key_list)].copy()
+            if nested_dict['type'] == 'con_input':
+                min_val, max_val = nested_dict['value'][0], nested_dict['value'][1]
+                modified_dataframe = modified_dataframe[modified_dataframe[feature_name].between(min_val, max_val, inclusive='both')].copy()
         self.dataframe = modified_dataframe
 
     def process_input_options(self):

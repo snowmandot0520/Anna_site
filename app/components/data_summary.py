@@ -34,10 +34,10 @@ def data_summary(file):
         st.warning('❗Please select at least one input feature to run analysis.')
         st.stop()
 
-    subset_dict = {
-        'Transplant type': ['DBD kidney transplant', 'DCD kidney transplant', 'LRD kidney transplant', 'LUD kidney transplant']
-        }
+    # Read subset options from uploaded data template
+    subset_dict = model.get_subset_options_dict()
 
+    # Widget to interactively update subset options
     if label_info['selected_label'] == 'Failure within given duration [y/n]':
         survival_state = st.selectbox('Create subset based on graft function', ['working', 'failed', 'both'])
         # No need to create subset if 'both' selected'
@@ -46,6 +46,7 @@ def data_summary(file):
         elif survival_state == 'failed':
             subset_dict[model.label_feature]=[0]
 
+    # create updated dataframe based on subset options
     model.create_dataframe_subset(subset_dict)
 
     df_to_analyze = model.dataframe[selected_variables]
