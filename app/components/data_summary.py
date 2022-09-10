@@ -42,9 +42,9 @@ def data_summary(file):
         survival_state = st.selectbox('Create subset based on graft function', ['working', 'failed', 'both'])
         # No need to create subset if 'both' selected'
         if survival_state == 'working':
-            subset_dict[model.label_feature]=[1]
+            subset_dict[model.label_feature] = {'type':'cat_input', 'value':[1]}
         elif survival_state == 'failed':
-            subset_dict[model.label_feature]=[0]
+            subset_dict[model.label_feature]= {'type':'cat_input', 'value':[0]}
 
     # create updated dataframe based on subset options
     model.create_dataframe_subset(subset_dict)

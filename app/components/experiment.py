@@ -63,7 +63,6 @@ def experiment(file, verbose):
         subset_dict = model_instance.get_subset_options_dict()
         model_instance.create_dataframe_subset(subset_dict)
 
-    st.write('### Dataset size')
     for model_name, model_instance in model_dict.items():
         model_instance.process_input_options()
 
@@ -77,8 +76,9 @@ def experiment(file, verbose):
     for model_name, model_instance in model_dict.items():
         model_instance.verbose = verbose
 
-    if st.session_state['continue_state'] is False:
+    if st.session_state['train_state'] is False:
         st.session_state['continue_state'] = st.button('Continue')
+    if st.session_state['continue_state'] is False:
         st.stop()
 
     while st.session_state['train_state'] is False:

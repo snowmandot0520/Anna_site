@@ -67,23 +67,6 @@ class BaseModel(ABC):
             interval = dataframe_covariate_range['Interval'][dataframe_covariate_range['Variable'] == item].values[0]
             self.covariate_range_dict[item] = [*range(min_val, max_val, interval)]
 
-    def create_dataframe_subset_dict(self, dataframe_subset_analysis):
-        subset_dict = {}
-        for row in dataframe_subset_analysis.itertuples():
-            var_name = row.Variable
-            var_type = row.Type
-            if var_type == 'con_input':
-                subset_dict[var_name] = {'type':var_type, 'value':[row.Min, row.Max]}
-            elif var_type == 'cat_input':
-                categories_list = row.Categories.split(',')
-                subset_dict[var_name] = {'type':var_type, 'value':categories_list}
-        self.selected_subset_dict = subset_dict
-
-    def get_subset_options_dict(self):
-        if self.verbose:
-            print(f'Running {self.model_name} on subset of following features {self.selected_subset_dict}')
-        return self.selected_subset_dict
-
     def get_data(self, file):
         self.get_dataframe(file['Data'])
         self.get_dataframe_code(file['Data Code'])
@@ -155,6 +138,23 @@ class BaseModel(ABC):
     def remove_event_status(self):
         self.x.drop(columns=['Event_observed'])
 
+    def create_dataframe_subset_dict(self, dataframe_subset_analysis):
+        subset_dict = {}
+        for row in dataframe_subset_analysis.itertuples():
+            var_name = row.Variable
+            var_type = row.Type
+            if var_type == 'con_input':
+                subset_dict[var_name] = {'type':var_type, 'value':[row.Min, row.Max]}
+            elif var_type == 'cat_input':
+                categories_list = row.Categories.split(',')
+                subset_dict[var_name] = {'type':var_type, 'value':categories_list}
+        self.selected_subset_dict = subset_dict
+
+    def get_subset_options_dict(self):
+        if self.verbose:
+            print(f'Running {self.model_name} on subset of following features {self.selected_subset_dict}')
+        return self.selected_subset_dict
+        
     def create_dataframe_subset(self, subset_feature_dict):
         '''
         Summary:
@@ -310,7 +310,7 @@ class BaseModel(ABC):
             print('To be implemented: no visualizations implemented for regression task')
         self.experiment_fig_list.append(
             {
-                'model_ver':self.model_name + f'_{len(self.log)}',
+                'model_ver':self.model_name + f'_{len(self.log)-1}',
                 'plots':{
                     'confusion_matrix':cm,
                     'variable_importance':vi
@@ -441,7 +441,7 @@ class BaseModel(ABC):
 
     def create_zip_download_button(self):
         assert len(self.log) > 0, 'Error: No log to save or export'
-        pd.DataFrame(data=self.log).to_csv('experiment_log.csv')
+        pd.DataFrame(data=self.log).to_csv('local/experiment_log.csv')
         file_name = f'local/{self.model_name}.zip'
 
         with zipfile.ZipFile(file_name, 'w') as zip_obj:
