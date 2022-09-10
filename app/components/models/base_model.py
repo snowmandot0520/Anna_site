@@ -2,6 +2,7 @@
 
 # LOAD DEPENDENCY ----------------------------------------------------------
 import os
+import io
 import zipfile
 import pandas as pd
 import numpy as np
@@ -301,8 +302,8 @@ class BaseModel(ABC):
         '''
         assert len(self.log) > 0, 'function must be called after _model.save_log()'
         if self.label_feature[-5:] == '[y/n]':
-            self.plot_confusion_matrix()
-            self.plot_variable_importance()
+            self.plot_confusion_matrix(show_on_streamlit=False)
+            self.plot_variable_importance(show_on_streamlit=False)
             cm = self.confusion_matrix_plot
             vi = self.variable_importance_plot
         elif self.label_feature[-5:] == '[days]':
@@ -318,7 +319,7 @@ class BaseModel(ABC):
         )
         return self.experiment_fig_list
 
-    def plot_confusion_matrix(self):
+    def plot_confusion_matrix(self, show_on_streamlit=True):
         cm_train = confusion_matrix(y_true=self.y_train, y_pred=self.y_train_pred)
         cm_test = confusion_matrix(y_true=self.y_test, y_pred=self.y_test_pred)
 
@@ -328,11 +329,12 @@ class BaseModel(ABC):
         ConfusionMatrixDisplay(cm_test).plot(ax=ax2)
         ax1.set_title('Train data')
         ax2.set_title('Test data')
-        st.subheader(f'Confusion matrix: {self.model_name}')
-        st.pyplot(fig)
         self.confusion_matrix_plot = fig
+        if show_on_streamlit:
+            st.subheader(f'Confusion matrix: {self.model_name}')
+            st.pyplot(fig)
 
-    def plot_variable_importance(self):
+    def plot_variable_importance(self, show_on_streamlit=True):
         result = permutation_importance(self.best_estimator, self.x_train, self.y_train, n_repeats=10, n_jobs=-1)
         sorted_idx = result.importances_mean.argsort()
 
@@ -340,11 +342,12 @@ class BaseModel(ABC):
         ax.boxplot(result.importances[sorted_idx].T, vert=False, labels=self.x_train.columns[sorted_idx])
         ax.set_title(f'Permutation Importances (train set): {self.model_name}')
         fig.tight_layout()
-        st.subheader(f'Variable importance: {self.model_name}')
-        st.pyplot(fig)
         self.variable_importance_plot = fig
+        if show_on_streamlit:
+            st.subheader(f'Variable importance: {self.model_name}')
+            st.pyplot(fig)
 
-    def plot_recursive_feature_elimination_cross_validation_test(self):
+    def plot_recursive_feature_elimination_cross_validation_test(self, show_on_streamlit=True):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
         fig.suptitle('RFE Cross Validation Outcome')
         ax1.plot(range(1, len(self.selector.cv_results_['mean_test_score']) + 1),
@@ -355,10 +358,11 @@ class BaseModel(ABC):
                  self.selector.cv_results_['concordance_index_test_score'])
         ax2.set_ylabel('Concordance Index')
         ax2.set_xlabel('Number of features')
-        st.pyplot(fig)
         self.fig_rfecv = fig
+        if show_on_streamlit:
+            st.pyplot(fig)
 
-    def plot_univariate_survival_curve(self):
+    def plot_univariate_survival_curve(self, show_on_streamlit=True):
         fig_uni, (ax1_uni, ax2_uni) = plt.subplots(1, 2, figsize=(12, 4))
 
         kmf = KaplanMeierFitter()
@@ -383,7 +387,8 @@ class BaseModel(ABC):
         ax2_uni.set_xlabel('Time [days]')
         ax2_uni.set_ylabel('Cumulative hazard')
 
-        st.pyplot(fig_uni)
+        if show_on_streamlit:
+            st.pyplot(fig_uni)
 
     def export_log_to_local(self):
         st.text(f'Exporting log for {self.model_name.lower()}')
@@ -452,7 +457,7 @@ class BaseModel(ABC):
                 os.remove(f'local/{name}_vi.png')
             zip_obj.close()
 
-        with open(file_name, mode="rb") as zip_file:
+        with open(file_name, mode='rb') as zip_file:
             st.download_button(
                 label='Download all output as zip',
                 data=zip_file.read(),
