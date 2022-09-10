@@ -2,7 +2,9 @@
 # TODO: implement iterative option for MLP layer size.
 
 # LOAD DEPENDENCY ----------------------------------------------------------
+from time import time
 import streamlit as st
+import time
 
 from itertools import product
 from app.components.utils import widget_functions
@@ -72,9 +74,9 @@ def experiment(file, verbose):
         model_instance.train_test_split(test_proportion=test_proportion)
 
     # Overwrite command line verbose option for experiment setting
-    verbose = st.checkbox('Print training performance')
+    print_status = st.checkbox('Print training performance')
     for model_name, model_instance in model_dict.items():
-        model_instance.verbose = verbose
+        model_instance.verbose = print_status
 
     if st.session_state['train_state'] is False:
         st.session_state['continue_state'] = st.button('Continue')
@@ -89,6 +91,7 @@ def experiment(file, verbose):
 
                 if verbose:
                     print(f'Running iterations for {model_name}')
+                    model_start_time = time.time()
 
                 # change dictionary to iterable list form using dot product
                 collected_param_values = []
@@ -99,7 +102,9 @@ def experiment(file, verbose):
 
                 # run iterations of all possible parameter sets
                 for params in list(product(*collected_param_values)):
-                    print(f'running parameter set: {params}')
+                    if verbose:
+                        print(f'running parameter set: {params}')
+                        start_time = time.time()
                     model_instance = model_dict[model_name]
                     widget_functions.set_model_params(model_name, model_instance, params, param_index_dict)
 
@@ -111,6 +116,13 @@ def experiment(file, verbose):
                     if model_instance.label_feature[-5:] == '[y/n]':
                         model_instance.store_best_estimator(metric='roc_auc')
                         model_instance.store_estimator_plots()
+                    if verbose:
+                        end_time = time.time()
+                        print(f'time taken: {(end_time-start_time):.3f}s')
+
+                if verbose:
+                    model_end_time = time.time()
+                    print(f'total time taken for {model_name}: {(model_end_time-model_start_time):.3f}s')
 
         st.success('Done!')
         st.session_state['train_state'] = True

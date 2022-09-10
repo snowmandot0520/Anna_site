@@ -441,25 +441,27 @@ class BaseModel(ABC):
 
     def create_zip_download_button(self):
         assert len(self.log) > 0, 'Error: No log to save or export'
-        pd.DataFrame(data=self.log).to_csv('local/experiment_log.csv')
+        pd.DataFrame(data=self.log).to_csv('experiment_log.csv')
         file_name = f'local/{self.model_name}.zip'
 
         with zipfile.ZipFile(file_name, 'w') as zip_obj:
-            zip_obj.write('local/experiment_log.csv')
+            zip_obj.write('experiment_log.csv')
             for dict_item in self.experiment_fig_list:
                 name = dict_item['model_ver']
                 cm, vi = dict_item['plots']['confusion_matrix'], dict_item['plots']['variable_importance']
-                cm.savefig(f'local/{name}_cm.png', format='png', transparent=True)
-                vi.savefig(f'local/{name}_vi.png', format='png', transparent=True)
-                zip_obj.write(f'local/{name}_cm.png')
-                zip_obj.write(f'local/{name}_vi.png')
-                os.remove(f'local/{name}_cm.png')
-                os.remove(f'local/{name}_vi.png')
+                cm.savefig(f'{name}_cm.png', format='png', transparent=True)
+                vi.savefig(f'{name}_vi.png', format='png', transparent=True)
+                zip_obj.write(f'{name}_cm.png')
+                zip_obj.write(f'{name}_vi.png')
+                os.remove(f'{name}_cm.png')
+                os.remove(f'{name}_vi.png')
+            os.remove('experiment_log.csv')
             zip_obj.close()
 
         with open(file_name, mode='rb') as zip_file:
             st.download_button(
                 label='Download all output as zip',
                 data=zip_file.read(),
-                file_name=self.model_name+'.zip'
+                file_name=self.model_name+'.zip',
+                on_click=os.remove(f'local/{self.model_name}.zip')
             )
