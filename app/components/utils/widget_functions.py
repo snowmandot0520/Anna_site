@@ -118,10 +118,12 @@ def mlp_parameter_widget(mlp_model):
         hidden_layer_dimensions.append(layer_size)
     mlp_model.hidden_layer_sizes = tuple(hidden_layer_dimensions)
     activation = st.multiselect('Non linear activation?', options=mlp_model.activation_list)
+    solver = st.multiselect('Optimizer?', options=mlp_model.solver_list)
     alpha = st.select_slider('Alpha?', options=mlp_model.alpha_list, value=(0.001, 0.003))
     iterables = mlp_model.get_iterable_model_options(
         activation=activation,
-        alpha=alpha
+        alpha=alpha,
+        solver=solver
         )
     return iterables
 

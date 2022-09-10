@@ -2,7 +2,6 @@
 # TODO: implement iterative option for MLP layer size.
 
 # LOAD DEPENDENCY ----------------------------------------------------------
-from time import time
 import streamlit as st
 import time
 
@@ -135,3 +134,5 @@ def experiment(file, verbose):
     train_again = st.button('Train again')
     if train_again:
         st.session_state['train_state'] = False
+        for model_name, model_instance in model_dict.items():
+            model_instance.clear_cache()

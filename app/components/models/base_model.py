@@ -154,7 +154,7 @@ class BaseModel(ABC):
         if self.verbose:
             print(f'Running {self.model_name} on subset of following features {self.selected_subset_dict}')
         return self.selected_subset_dict
-        
+
     def create_dataframe_subset(self, subset_feature_dict):
         '''
         Summary:
@@ -465,3 +465,11 @@ class BaseModel(ABC):
                 file_name=self.model_name+'.zip',
                 on_click=os.remove(f'local/{self.model_name}.zip')
             )
+
+    def clear_cache(self):
+        self.log = []
+        self.fig_list = []
+        self.experiment_fig_list = []
+        self.stored_best_performance = 0
+        self.stored_best_estimator = None
+        self.stored_best_estimator_params = None
