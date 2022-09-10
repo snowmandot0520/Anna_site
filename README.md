@@ -56,7 +56,7 @@ streamlit run main.py
 
 As explained in the [project scope](#project-scope), the current release is focused on use cases based on a database collected from a single institution. Therefore there are some assumptions that have been made regarding the format of the data uploaded for analysis. Please use the [example template](https://github.com/woochan-hwang/GSurvWeb/blob/main/App/data/example_data_template.xlsx) provided as a guidance. 
 
-Please note the additional sheets in the template file. The 'Data Code' sheet details what type of data each variable is. This allows the app to show appropriate options. The 'Data Range' sheet is specific for visualization of the cox proportional hazards model. Any continuous variable that will be used as an input for the cox model should be included in this sheet. 
+Please note the additional sheets in the template file. The 'Data Code' sheet details what type of data each variable is. This allows the app to show appropriate options. The 'Data Range' sheet is specific for visualization of the cox proportional hazards model. Any continuous variable that will be used as an input for the cox model should be included in this sheet. 'Subset Analysis' defines variables and respective conditions to create a subset of the uploaded data to be used for analysis. The intention of using spreadsheets rather than widgets for certain features was to simplify the interface and minimize the number of repeated actions. Please provide feedback for any additional features or implementation of certain features usings widgets rather than spreadsheets. 
 
 ### Developer Mode
 
