@@ -101,7 +101,8 @@ def interactive(file, verbose):
         available_input_options = model.get_input_options()
         selected_features = st.sidebar.multiselect(
             'Input features (select at least one):',
-            available_input_options
+            available_input_options,
+            default=available_input_options
             )
         if selected_model in ['Cox Proportional Hazards', 'Multi-layer Perceptron']:
             feature_elimination = False

@@ -2,7 +2,6 @@
 
 # LOAD DEPENDENCY ----------------------------------------------------------
 import os
-import io
 import zipfile
 import pandas as pd
 import numpy as np
@@ -33,6 +32,9 @@ class BaseModel(ABC):
         self.verbose = False
         self.boolean_survival_status = None
         self.log = []
+        self.fig_list = []
+        self.experiment_fig_list = []
+        self.stored_best_performance = 0
 
     @abstractmethod
     def train(self):
@@ -267,6 +269,55 @@ class BaseModel(ABC):
         # wrapper to implement custom sklearn scoring function using lifelines
         return concordance_index(predicted_scores=estimator(x), event_times=y)
 
+    def store_best_estimator(self, metric):
+        # store best_estimator in experiment mode
+        # TODO: currently only works for metrics where higher value is better
+        assert len(self.log) > 0, 'function must be called after _model.save_log()'
+        assert f'test_{metric}' in self.log[-1], f'metric [{metric}] must match the string defined in the evaluate function'
+        best_performance = self.log[-1][f'test_{metric}']
+        if best_performance > self.stored_best_performance:
+            self.stored_best_performance = best_performance
+            self.stored_best_estimator = self.best_estimator
+            self.stored_best_estimator_params = self.log[-1]
+
+    def store_estimator_plots(self):
+        '''
+        Summary:
+            Method called in experiment mode to save plots of models
+            trained during iterative parameter runs.
+
+        Returns:
+            List of dictionary items with length N, where N is the
+            total number of trained parameter variations
+            [
+                {
+                    'model_ver': self.model_name + '_experiment_number'
+                    'model_plots': {
+                        'confusion_matrix': confusion matrix
+                        'variable_importance': variable importance plot
+                    }
+                }
+            ]
+        '''
+        assert len(self.log) > 0, 'function must be called after _model.save_log()'
+        if self.label_feature[-5:] == '[y/n]':
+            self.plot_confusion_matrix()
+            self.plot_variable_importance()
+            cm = self.confusion_matrix_plot
+            vi = self.variable_importance_plot
+        elif self.label_feature[-5:] == '[days]':
+            print('To be implemented: no visualizations implemented for regression task')
+        self.experiment_fig_list.append(
+            {
+                'model_ver':self.model_name + f'_{len(self.log)}',
+                'plots':{
+                    'confusion_matrix':cm,
+                    'variable_importance':vi
+                }
+            }
+        )
+        return self.experiment_fig_list
+
     def plot_confusion_matrix(self):
         cm_train = confusion_matrix(y_true=self.y_train, y_pred=self.y_train_pred)
         cm_test = confusion_matrix(y_true=self.y_test, y_pred=self.y_test_pred)
@@ -384,17 +435,26 @@ class BaseModel(ABC):
             figure_number += 1
 
     def create_zip_download_button(self):
-        file_name = self.model_name + '.zip'
-        zip_obj = zipfile.ZipFile(file_name, 'w')
-        log = self.log.to_csv().encode('utf-8')
-        zip_obj.write(log)
-        for fig in self.fig_list:
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png', transparent=True)
-            zip_obj.write(buf.getvalue())
-        zip_obj.close()
-        st.download_button(
-            label='Download all output as zip',
-            data=zipfile,
-            file_name=file_name
-        )
+        assert len(self.log) > 0, 'Error: No log to save or export'
+        pd.DataFrame(data=self.log).to_csv('experiment_log.csv')
+        file_name = f'local/{self.model_name}.zip'
+
+        with zipfile.ZipFile(file_name, 'w') as zip_obj:
+            zip_obj.write('local/experiment_log.csv')
+            for dict_item in self.experiment_fig_list:
+                name = dict_item['model_ver']
+                cm, vi = dict_item['plots']['confusion_matrix'], dict_item['plots']['variable_importance']
+                cm.savefig(f'local/{name}_cm.png', format='png', transparent=True)
+                vi.savefig(f'local/{name}_vi.png', format='png', transparent=True)
+                zip_obj.write(f'local/{name}_cm.png')
+                zip_obj.write(f'local/{name}_vi.png')
+                os.remove(f'local/{name}_cm.png')
+                os.remove(f'local/{name}_vi.png')
+            zip_obj.close()
+
+        with open(file_name, mode="rb") as zip_file:
+            st.download_button(
+                label='Download all output as zip',
+                data=zip_file.read(),
+                file_name=self.model_name+'.zip'
+            )

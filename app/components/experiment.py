@@ -36,7 +36,11 @@ def experiment(file, verbose):
         # return value is equal given same df for all subclass of BaseModel
         available_input_options = model_instance.get_input_options()
 
-    selected_features = st.multiselect('Input features (select at least one):', available_input_options)
+    selected_features = st.multiselect(
+        'Input features (select at least one):',
+        available_input_options,
+        default=available_input_options
+        )
     feature_elimination = st.checkbox(
         'Recursive feature elimination?',
         value=False,
@@ -77,7 +81,7 @@ def experiment(file, verbose):
         st.session_state['continue_state'] = st.button('Continue')
         st.stop()
 
-    if st.session_state['train_state'] is False:
+    while st.session_state['train_state'] is False:
 
         with st.spinner('training in progress...'):
 
@@ -98,12 +102,15 @@ def experiment(file, verbose):
                     print(f'running parameter set: {params}')
                     model_instance = model_dict[model_name]
                     widget_functions.set_model_params(model_name, model_instance, params, param_index_dict)
-                    print(model_instance.input_features)
 
                     model_instance.build_estimator()
                     model_instance.train()
                     model_instance.evaluate()
                     model_instance.save_log()
+
+                    if model_instance.label_feature[-5:] == '[y/n]':
+                        model_instance.store_best_estimator(metric='roc_auc')
+                        model_instance.store_estimator_plots()
 
         st.success('Done!')
         st.session_state['train_state'] = True
@@ -111,7 +118,7 @@ def experiment(file, verbose):
     st.write('#### Save options')
     # create download option from browser
     for model_name, model_instance in model_dict.items():
-        model_instance.create_log_download_button()
+        model_instance.create_zip_download_button()
 
     train_again = st.button('Train again')
     if train_again:
