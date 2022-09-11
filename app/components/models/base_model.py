@@ -441,8 +441,11 @@ class BaseModel(ABC):
 
     def create_zip_download_button(self):
         assert len(self.log) > 0, 'Error: No log to save or export'
+        save_dir = f'{os.getcwd()}/local'
+        if not os.path.isdir(save_dir):
+            os.mkdir(save_dir)
         pd.DataFrame(data=self.log).to_csv('experiment_log.csv')
-        file_name = f'local/{self.model_name}.zip'
+        file_name = f'{save_dir}/{self.model_name}.zip'
 
         with zipfile.ZipFile(file_name, 'w') as zip_obj:
             zip_obj.write('experiment_log.csv')
@@ -462,8 +465,8 @@ class BaseModel(ABC):
             st.download_button(
                 label='Download all output as zip',
                 data=zip_file.read(),
-                file_name=self.model_name+'.zip',
-                on_click=os.remove(f'local/{self.model_name}.zip')
+                file_name=f'{self.model_name}.zip',
+                on_click=os.remove(file_name)
             )
 
     def clear_cache(self):
