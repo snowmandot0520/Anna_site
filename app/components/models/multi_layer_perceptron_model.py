@@ -19,7 +19,7 @@ class MultiLayerPerceptronClassifier(BaseModel):
         self.activation = 'relu'
         self.activation_list =  ['relu', 'identity', 'logistic', 'tanh']
         self.solver = 'adam'
-        self.solver_list = ['lbfgs', 'sgd', 'adam']
+        self.solver_list = ['adam', 'lbfgs', 'sgd']
         self.max_iter = 500
         self.alpha = 0.001
         self.alpha_list = [0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01]

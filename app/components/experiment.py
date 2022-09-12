@@ -15,6 +15,13 @@ def experiment(file, verbose):
     label_info = widget_functions.create_select_label_widget()
 
     if label_info['selected_label'] == 'Failure within given duration [y/n]':
+        # Imbalanced data resampling
+        resampler_method = st.selectbox(
+            'Select resample method:',
+            ['SMOTE', 'ADASYN', 'SMOTEENN', 'TomekLinks', 'None'],
+            help='Resampling method for imbalanced datasets. SMOTE and ADASYN are oversampling \
+                methods, TomekLinks is an undersampling method and SMOTEENN is a combined method'
+        )
         # Binary classification task
         model_list = st.multiselect('Models to train in this session:', ['SVM', 'RF', 'MLP'])
         model_dict = widget_functions.create_class_instances(task='classification', model_list=model_list)
@@ -71,6 +78,8 @@ def experiment(file, verbose):
     test_proportion = st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3)
     for model_name, model_instance in model_dict.items():
         model_instance.train_test_split(test_proportion=test_proportion)
+        if label_info['selected_label'] == 'Failure within given duration [y/n]':
+            model_instance.resample_imbalanced_class(method=resampler_method)
 
     # Overwrite command line verbose option for experiment setting
     print_status = st.checkbox('Print training performance')

@@ -26,6 +26,12 @@ def interactive(file, verbose):
                 'Classification model:',
                 ['Support Vector Machine', 'Random Forest', 'Multi-layer Perceptron']
                 )
+            resampler_method = st.selectbox(
+                'Resample method:',
+                ['SMOTE', 'ADASYN', 'SMOTEENN', 'TomekLinks', 'None'],
+                help='Resampling method for imbalanced datasets. SMOTE and ADASYN are oversampling \
+                    methods, TomekLinks is an undersampling method and SMOTEENN is a combined method'
+            )
             if selected_model == 'Support Vector Machine':
                 model = support_vector_machine_model.SupportVectorClassifier()
                 model.class_weight = st.selectbox(
@@ -148,6 +154,8 @@ def interactive(file, verbose):
     model.train_test_split(
         test_proportion=st.slider('Test set proprotion?', min_value=0.1, max_value=0.5, step=0.1, value=0.3)
         )
+    if label_info['selected_label'] == 'Failure within given duration [y/n]':
+        model.resample_imbalanced_class(method=resampler_method)
 
     if st.session_state['train_state'] is False:
         st.session_state['continue_state'] = st.button('Run model')

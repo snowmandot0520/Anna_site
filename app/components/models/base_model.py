@@ -12,6 +12,9 @@ import streamlit as st
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
+from imblearn.combine import SMOTEENN
+from imblearn.over_sampling import ADASYN, SMOTE
+from imblearn.under_sampling import TomekLinks
 from lifelines import KaplanMeierFitter, NelsonAalenFitter
 from lifelines.utils import concordance_index
 from abc import ABC, abstractmethod
@@ -251,6 +254,7 @@ class BaseModel(ABC):
                                                                     stratify=stratify,
                                                                     test_size=test_proportion
                                                                     )
+        st.text('Dataset post train/test split')
         if self.boolean_survival_status is None:
             st.text(f'Train size: {len(self.x_train)} samples')
             st.text(f'Test size: {len(self.x_test)} samples')
@@ -265,6 +269,36 @@ class BaseModel(ABC):
                 f'Positive: {sum(self.y_test == 1)}; '
                 f'Negative: {sum(self.y_test == 0)}'
             )
+
+    def resample_imbalanced_class(self, method='SMOTEENN'):
+        # applies imbalanced resampling methods using imbalanced learn library
+        # currently applied as default for all classifier models
+        # TODO: implement other methods
+        if method == 'SMOTEENN':
+            resampler = SMOTEENN(random_state=28)
+        elif method == 'SMOTE':
+            resampler = SMOTE(random_state=28)
+        elif method == 'ADASYN':
+            resampler = ADASYN(random_state=28)
+        elif method == 'TomekLinks':
+            resampler = TomekLinks()
+        elif method == 'None':
+            return None
+        else:
+            raise NameError(f'method {method} is not been implemented')
+
+        self.x_train, self.y_train = resampler.fit_resample(self.x_train, self.y_train)
+        st.text(f'Resampled training dataset using {method} method')
+        st.text(
+            f'Train size: {len(self.x_train)} samples | '
+            f'Positive: {sum(self.y_train == 1)}; '
+            f'Negative: {sum(self.y_train == 0)}'
+        )
+        st.text(
+            f'Test size: {len(self.x_test)} samples | '
+            f'Positive: {sum(self.y_test == 1)}; '
+            f'Negative: {sum(self.y_test == 0)}'
+        )
 
     def concordance_index_score(self, estimator, x, y):
         # wrapper to implement custom sklearn scoring function using lifelines
