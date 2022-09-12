@@ -32,7 +32,7 @@ jobs:
       - name: Python Code Quality and Lint
         uses: ricardochaves/python-lint@v1.4.0
         with:
-          python-root-list: "main.py app tests"
+          python-root-list: "main.py app/components app/components/utils app/components/models tests"
           use-pylint: true
           use-pycodestyle: false
           use-flake8: false
