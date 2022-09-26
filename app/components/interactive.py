@@ -5,11 +5,7 @@ and evaluation based on parameters selected.
 # LOAD DEPENDENCY ----------------------------------------------------------
 import streamlit as st
 
-from app.components.models import support_vector_machine_model
-from app.components.models import random_forest_model
-from app.components.models import cart_model
-from app.components.models import cox_ph_model
-from app.components.models import multi_layer_perceptron_model
+from app.components.models import support_vector_machine_model, random_forest_model, cart_model, cox_ph_model, multi_layer_perceptron_model, beta_logistic_regression_model
 from app.components.utils import widget_functions
 
 # MAIN SCRIPT --------------------------------------------------------------
@@ -24,7 +20,7 @@ def interactive(file, verbose):
         if label_info['selected_label'] == 'Failure within given duration [y/n]':
             selected_model = st.selectbox(
                 'Classification model:',
-                ['Support Vector Machine', 'Random Forest', 'Multi-layer Perceptron']
+                ['Support Vector Machine', 'Random Forest', 'Multi-layer Perceptron', 'Logistic Regression']
                 )
             resampler_method = st.selectbox(
                 'Resample method:',
@@ -69,6 +65,8 @@ def interactive(file, verbose):
                 model.hidden_layer_sizes = tuple(hidden_layer_dimensions)
                 model.activation = st.selectbox('Non linear activation?', options=model.activation_list)
                 model.alpha = st.select_slider('Alpha?', options=model.alpha_list, value=0.001)
+            elif selected_model == 'Logistic Regression':
+                model = beta_logistic_regression_model.LogisticRegressionClassifier()
 
         # Regression task
         elif label_info['selected_label'] == 'Survival time [days]':

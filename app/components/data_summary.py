@@ -66,6 +66,7 @@ def data_summary(file):
 
         st.session_state['train_state'] = True
 
-    run_again = st.button('Run again')
-    if run_again:
+    if st.session_state['train_state'] is True:
+        run_again = st.button('Run again')
+    if run_again is True:
         st.session_state['train_state'] = False
